@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">camera</string>
+    <string name="zoomIn">放大</string>
+    <string name="zoomOut">缩小</string>
+    <string name="takePic">拍照</string>
+    <string name="exchangeCamera">切换镜头</string>
+</resources>
