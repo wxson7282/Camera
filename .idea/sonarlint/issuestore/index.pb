@@ -30,3 +30,9 @@ i
 9camera/src/main/java/com/wxson/camera/util/BitmapUtils.kt,e\3\e338ea233fdaa2b7fa9e7accc3cbe3807c8fc8c7
 f
 6camera/src/main/java/com/wxson/camera/util/FileUtil.kt,0\1\01822c175d1e491eb5568a8049f04bab484abcd9
+f
+6camera/src/main/java/com/wxson/camera/MainViewModel.kt,6\9\69c2d73758ebc1ce64cc7a4e452d413a0f258748
+C
+camera/build.gradle,c\5\c5ee167eeb33f015456b90564a7b8193a0405ace
+S
+#camera/src/main/AndroidManifest.xml,d\0\d0d16283f8309a9b30c17c0eb239670124f8746d

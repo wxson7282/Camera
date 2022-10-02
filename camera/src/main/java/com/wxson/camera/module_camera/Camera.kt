@@ -10,7 +10,6 @@ import android.hardware.camera2.*
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
 import android.media.ImageReader
-import android.os.AsyncTask
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
