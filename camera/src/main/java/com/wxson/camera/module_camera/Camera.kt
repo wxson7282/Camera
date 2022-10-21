@@ -34,7 +34,7 @@ class Camera {
     companion object {
         const val PREVIEW_WIDTH = 1080                                         //预览的宽度
         const val PREVIEW_HEIGHT = 1440                                       //预览的高度
-        const val SAVE_WIDTH = 2340                                            //保存图片的宽度
+        const val SAVE_WIDTH = 3120                                            //保存图片的宽度
         const val SAVE_HEIGHT = 4160                                          //保存图片的高度
     }
     private val tag = this.javaClass.simpleName
