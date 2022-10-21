@@ -47,14 +47,6 @@ class MainViewModel: ViewModel() {
         camera.setDisplayRotation(rotation)
     }
 
-    fun setTextureViewHeight(height: Int) {
-        camera.setTextureViewHeight(height)
-    }
-
-    fun setTextureViewWidth(width: Int) {
-        camera.setTextureViewWidth(width)
-    }
-
     fun getSurfaceTextureListener(): TextureView.SurfaceTextureListener {
         return camera.getSurfaceTextureListener()
     }

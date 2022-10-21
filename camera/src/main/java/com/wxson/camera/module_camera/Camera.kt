@@ -32,10 +32,10 @@ import java.util.*
  */
 class Camera {
     companion object {
-        const val PREVIEW_WIDTH = 720                                         //预览的宽度
-        const val PREVIEW_HEIGHT = 1280                                       //预览的高度
-        const val SAVE_WIDTH = 720                                            //保存图片的宽度
-        const val SAVE_HEIGHT = 1280                                          //保存图片的高度
+        const val PREVIEW_WIDTH = 1080                                         //预览的宽度
+        const val PREVIEW_HEIGHT = 1440                                       //预览的高度
+        const val SAVE_WIDTH = 2340                                            //保存图片的宽度
+        const val SAVE_HEIGHT = 4160                                          //保存图片的高度
     }
     private val tag = this.javaClass.simpleName
     private lateinit var cameraManager: CameraManager
@@ -55,7 +55,7 @@ class Camera {
     private var savePicSize = Size(SAVE_WIDTH, SAVE_HEIGHT)                            //保存图片大小
     private var textureViewHeight: Int = 0
     private var textureViewWidth: Int = 0
-    private var textureViewSurface: SurfaceTexture? = null
+    private var surfaceTexture: SurfaceTexture? = null
     private var previewRequestBuilder: CaptureRequest.Builder? = null
     private val maxZoom = 200                                          // 放大的最大值，用于计算每次放大/缩小操作改变的大小
     private var zoom = 0                                               // 0~maxZoom之间变化
@@ -83,7 +83,9 @@ class Camera {
 
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
             Log.i(tag, "onSurfaceTextureAvailable")
-            textureViewSurface = surface
+            surfaceTexture = surface
+            textureViewWidth = width
+            textureViewHeight = height
             initCameraInfo()
         }
     }
@@ -134,14 +136,6 @@ class Camera {
 
     fun setDisplayRotation(rotation: Int?) {
         displayRotation = rotation ?: 0
-    }
-
-    fun setTextureViewHeight(height: Int) {
-        textureViewHeight = height
-    }
-
-    fun setTextureViewWidth(width: Int) {
-        textureViewWidth = width
     }
 
     fun getSurfaceTextureListener(): TextureView.SurfaceTextureListener {
@@ -227,10 +221,10 @@ class Camera {
         // initZoomParameter
         // 获取最大的放大倍数 maxDigitalZoom表示 active_rect 除以 crop_rect 的最大值
         val maxDigitalZoom = cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM) ?: 1
-        Log.d(tag, "maxDigitalZoom: $maxDigitalZoom")
+        Log.i(tag, "maxDigitalZoom: $maxDigitalZoom")
         // 获取未缩放的正常预览画面大小
         val rect = cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
-        Log.d(tag, "sensor_info_active_array_size: $rect")
+        Log.i(tag, "sensor_info_active_array_size: $rect")
         // crop_rect的最小宽高
         rect?.let {
             val minWidth: Float = it.width().toFloat().div(maxDigitalZoom.toFloat())
@@ -245,6 +239,7 @@ class Camera {
 
         val exchange = exchangeWidthAndHeight(displayRotation, cameraSensorOrientation)
 
+        Log.i(tag, "图片保存尺寸")
         savePicSize = getBestSize(
             if (exchange) savePicSize.height else savePicSize.width,
             if (exchange) savePicSize.width else savePicSize.height,
@@ -252,6 +247,7 @@ class Camera {
             if (exchange) savePicSize.width else savePicSize.height,
             savePicSizes?.toList() ?: emptyList())
 
+        Log.i(tag, "图片预览尺寸")
         previewSize = getBestSize(
             if (exchange) previewSize.height else previewSize.width,
             if (exchange) previewSize.width else previewSize.height,
@@ -259,8 +255,10 @@ class Camera {
             if (exchange) textureViewWidth else textureViewHeight,
             previewSizes?.toList() ?: emptyList())
 
-        //mTextureView.surfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
-        buildMsg(Msg("surfaceTextureDefaultBufferSize", previewSize))
+        // 重置预览尺寸
+        Log.i(tag, "setPreviewSize(${previewSize.width}, ${previewSize.height})")
+        //surfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
+        buildMsg(Msg("setPreviewSize", previewSize))
 
         Log.i(tag, "预览最优尺寸 ：${previewSize.width} * ${previewSize.height}, 比例  ${previewSize.width.toFloat() / previewSize.height}")
         Log.i(tag, "保存图片最优尺寸 ：${savePicSize.width} * ${savePicSize.height}, 比例  ${savePicSize.width.toFloat() / savePicSize.height}")
@@ -365,7 +363,7 @@ class Camera {
 
         previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
 
-        val surface = Surface(textureViewSurface)
+        val surface = Surface(surfaceTexture)
         previewRequestBuilder?.let {
             it.addTarget(surface)  // 将CaptureRequest的构建器与Surface对象绑定在一起
             it.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)      // 闪光灯
@@ -430,7 +428,7 @@ class Camera {
         val cropH = (stepHeight * zoom).toInt()
         rect?.let {
             val zoomRect = Rect(it.left + cropW, it.top + cropH, it.right - cropW, it.bottom - cropH)
-            Log.d(tag, "zoomRect: $zoomRect")
+            Log.i(tag, "zoomRect: $zoomRect")
             previewRequestBuilder!!.set(CaptureRequest.SCALER_CROP_REGION, zoomRect)
             reStartPreview() // 需要重新 start preview 才能生效
         }

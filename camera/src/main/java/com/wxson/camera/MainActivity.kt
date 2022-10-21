@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
+    private val tag = this.javaClass.simpleName
     private lateinit var viewModel: MainViewModel
     private lateinit var activityMainBinding: ActivityMainBinding
 
@@ -39,8 +40,6 @@ class MainActivity : AppCompatActivity() {
         with(activityMainBinding) {
             textureView.surfaceTextureListener = viewModel.getSurfaceTextureListener()
             viewModel.setDisplayRotation(mainActivityDisplayRotation)
-            viewModel.setTextureViewHeight(textureView.height)
-            viewModel.setTextureViewWidth(textureView.width)
             btnTakePic.setOnClickListener {
                 if (textureView.isAvailable)
                     viewModel.takePic()
@@ -61,18 +60,18 @@ class MainActivity : AppCompatActivity() {
             viewModel.msg.collect {
                 when (it.type) {
                     "msg" -> showMsg(it.obj as String)
-                    "surfaceTextureDefaultBufferSize" -> setSurfaceTextureDefaultBufferSize(it.obj as Size)
+                    "setPreviewSize" -> setPreviewSize(it.obj as Size)
                 }
             }
         }
     }
 
-    private fun setSurfaceTextureDefaultBufferSize(size: Size) {
-        activityMainBinding.textureView.surfaceTexture?.setDefaultBufferSize(size.width, size.height)
-    }
-
     private fun showMsg(msg: String){
         Toast.makeText(this, msg, Toast.LENGTH_LONG).show()
+    }
+
+    private fun setPreviewSize(size: Size) {
+        activityMainBinding.textureView.setAspectRation(size.width, size.height)
     }
 
     // 申请权限
