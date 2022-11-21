@@ -1,4 +1,4 @@
-package com.wxson.camera
+package com.wxson.camera_comm
 
 /**
  * @author wxson

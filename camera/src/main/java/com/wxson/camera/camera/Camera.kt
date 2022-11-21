@@ -1,4 +1,4 @@
-package com.wxson.camera.module_camera
+package com.wxson.camera.camera
 
 import android.Manifest
 import android.content.Context
@@ -10,6 +10,7 @@ import android.hardware.camera2.*
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
 import android.media.ImageReader
+import android.media.MediaFormat
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
@@ -18,9 +19,13 @@ import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import androidx.core.content.ContextCompat
-import com.wxson.camera.Msg
+import com.wxson.camera_comm.Msg
 import com.wxson.camera.MyApplication
+import com.wxson.camera.codec.Codec
+import com.wxson.camera.codec.MediaCodecCallback
 import com.wxson.camera.util.BitmapUtils
+import com.wxson.camera_comm.ImageData
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.*
@@ -30,13 +35,15 @@ import java.util.*
  * @date 2022/9/28
  * @apiNote
  */
-class Camera {
+class Camera(private val coroutineChannel: Channel<ImageData>) {
+
     companion object {
         const val PREVIEW_WIDTH = 1080                                         //预览的宽度
         const val PREVIEW_HEIGHT = 1440                                       //预览的高度
-        const val SAVE_WIDTH = 3120                                            //保存图片的宽度
-        const val SAVE_HEIGHT = 4160                                          //保存图片的高度
+        const val SAVE_WIDTH = 1080                                            //保存图片的宽度
+        const val SAVE_HEIGHT = 1440                                          //保存图片的高度
     }
+
     private val tag = this.javaClass.simpleName
     private lateinit var cameraManager: CameraManager
     private var imageReader: ImageReader? = null
@@ -62,9 +69,12 @@ class Camera {
     private val zoomStep = 20
     private var stepWidth: Float = 0f                                  // 每次改变的宽度大小
     private var stepHeight: Float = 0f                                 // 每次改变的高度大小
+    private val videoCodecMime = MediaFormat.MIMETYPE_VIDEO_HEVC
+
+    lateinit var mediaCodecCallback: MediaCodecCallback
 
     private val _msg = MutableStateFlow(Msg("", null))
-    val msg: StateFlow<Msg> = _msg
+    val msgStateFlow: StateFlow<Msg> = _msg
 
     private val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
@@ -100,8 +110,8 @@ class Camera {
 
         BitmapUtils.savePic(byteArray, "camera2", cameraSensorOrientation == 270, { savedPath,
                                                                                     time ->
-            buildMsg(Msg("msg", "图片保存成功！ 保存路径：$savedPath 耗时：$time"))
-        }, { msg -> buildMsg(Msg("msg", "图片保存失败！ $msg")) })
+            buildMsg(Msg("msgStateFlow", "图片保存成功！ 保存路径：$savedPath 耗时：$time"))
+        }, { msg -> buildMsg(Msg("msgStateFlow", "图片保存失败！ $msg")) })
     }
 
     private val captureCallBack = object : CameraCaptureSession.CaptureCallback() {
@@ -115,7 +125,7 @@ class Camera {
         override fun onCaptureFailed(session: CameraCaptureSession, request: CaptureRequest, failure: CaptureFailure) {
             super.onCaptureFailed(session, request, failure)
             Log.i(tag, "onCaptureFailed")
-            buildMsg(Msg("msg","开启预览失败！"))
+            buildMsg(Msg("msgStateFlow","开启预览失败！"))
         }
     }
 
@@ -153,7 +163,7 @@ class Camera {
             captureRequestBuilder.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)     // 闪光灯
             captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, cameraSensorOrientation)      //根据摄像头方向对保存的照片进行旋转，使其为"自然方向"
             cameraCaptureSession?.capture(captureRequestBuilder.build(), null, cameraHandler)
-                ?: buildMsg(Msg("msg","拍照异常！"))
+                ?: buildMsg(Msg("msgStateFlow","拍照异常！"))
         }
     }
 
@@ -193,7 +203,7 @@ class Camera {
         cameraManager = MyApplication.context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
         val cameraIdList = cameraManager.cameraIdList
         if (cameraIdList.isEmpty()) {
-            buildMsg(Msg("msg","没有可用相机"))
+            buildMsg(Msg("msgStateFlow","没有可用相机"))
             return
         }
 
@@ -210,7 +220,7 @@ class Camera {
         }
         val supportLevel = cameraCharacteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL)
         if (supportLevel == CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY) {
-            buildMsg(Msg("msg","相机硬件不支持新特性"))
+            buildMsg(Msg("msgStateFlow","相机硬件不支持新特性"))
         }
 
         //获取摄像头方向
@@ -255,9 +265,8 @@ class Camera {
             if (exchange) textureViewWidth else textureViewHeight,
             previewSizes?.toList() ?: emptyList())
 
-        // 重置预览尺寸
+        // 请求MainActivity重置预览尺寸
         Log.i(tag, "setPreviewSize(${previewSize.width}, ${previewSize.height})")
-        //surfaceTexture?.setDefaultBufferSize(previewSize.width, previewSize.height)
         buildMsg(Msg("setPreviewSize", previewSize))
 
         Log.i(tag, "预览最优尺寸 ：${previewSize.width} * ${previewSize.height}, 比例  ${previewSize.width.toFloat() / previewSize.height}")
@@ -265,6 +274,8 @@ class Camera {
 
         imageReader = ImageReader.newInstance(savePicSize.width, savePicSize.height, ImageFormat.JPEG, 1)
         imageReader?.setOnImageAvailableListener(onImageAvailableListener, cameraHandler)
+        // 定义编码器回调
+        mediaCodecCallback = MediaCodecCallback(videoCodecMime, previewSize, coroutineChannel)
 
         openCamera()
     }
@@ -283,7 +294,7 @@ class Camera {
                 if (sensorOrientation == 0 || sensorOrientation == 180) {
                     exchange = true
                 }
-            else -> buildMsg(Msg("msg","Display rotation is invalid: $displayRotation"))
+            else -> buildMsg(Msg("msgStateFlow","Display rotation is invalid: $displayRotation"))
         }
         Log.i(tag,"屏幕方向  $displayRotation")
         Log.i(tag,"相机方向  $sensorOrientation")
@@ -337,7 +348,7 @@ class Camera {
 
     private fun openCamera() {
         if (ContextCompat.checkSelfPermission(MyApplication.context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            buildMsg(Msg("msg", "没有相机权限！"))
+            buildMsg(Msg("msgStateFlow", "没有相机权限！"))
             return
         }
 
@@ -354,7 +365,7 @@ class Camera {
 
             override fun onError(camera: CameraDevice, error: Int) {
                 Log.i(tag, "onError $error")
-                buildMsg(Msg("msg", "打开相机失败！$error"))
+                buildMsg(Msg("msgStateFlow", "打开相机失败！$error"))
             }
         }, cameraHandler)
     }
@@ -362,10 +373,12 @@ class Camera {
     private fun createPreviewCaptureSession(cameraDevice: CameraDevice) {
 
         previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+        // 建立视频编码器
+        val codec = Codec(this.previewSize, mediaCodecCallback)
 
-        val surface = Surface(surfaceTexture)
+        val previewSurface = Surface(surfaceTexture)
         previewRequestBuilder?.let {
-            it.addTarget(surface)  // 将CaptureRequest的构建器与Surface对象绑定在一起
+            it.addTarget(previewSurface)  // 将CaptureRequest的构建器与Surface对象绑定在一起
             it.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)      // 闪光灯
             it.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE) // 自动对焦
         }
@@ -374,7 +387,7 @@ class Camera {
         // api28 之后，需要先创建SessionConfiguration，然后cameraDevice.createCaptureSession(sessionConfiguration)
         val stateCallback = object : CameraCaptureSession.StateCallback() {
             override fun onConfigureFailed(session: CameraCaptureSession) {
-                buildMsg(Msg("msg", "开启预览会话失败！"))
+                buildMsg(Msg("msgStateFlow", "开启预览会话失败！"))
             }
 
             override fun onConfigured(session: CameraCaptureSession) {
@@ -387,16 +400,25 @@ class Camera {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val outputConfigurations = listOf(OutputConfiguration(surface), OutputConfiguration(imageReader!!.surface))
+            val outputConfigurations = listOf(
+                OutputConfiguration(previewSurface),
+                OutputConfiguration(codec.encoderInputSurface),
+                OutputConfiguration(imageReader!!.surface))
             val executor = MyApplication.context.mainExecutor
             cameraDevice.createCaptureSession(SessionConfiguration(SessionConfiguration.SESSION_REGULAR,
                 outputConfigurations, executor, stateCallback ))
         } else {
             @Suppress("DEPRECATION")
-            cameraDevice.createCaptureSession(arrayListOf(surface, imageReader?.surface), stateCallback, cameraHandler)
+            cameraDevice.createCaptureSession(arrayListOf(
+                previewSurface,
+                codec.encoderInputSurface,
+                imageReader?.surface), stateCallback, cameraHandler)
         }
     }
 
+    /*
+    变焦时需要重新构建cameraCaptureSession
+     */
     private fun reStartPreview() {
         cameraCaptureSession?.let {
             previewRequestBuilder?.let {

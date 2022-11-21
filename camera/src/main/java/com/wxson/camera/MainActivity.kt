@@ -57,9 +57,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            viewModel.msg.collect {
+            viewModel.msgStateFlow.collect {
                 when (it.type) {
-                    "msg" -> showMsg(it.obj as String)
+                    "msgStateFlow" -> showMsg(it.obj as String)
                     "setPreviewSize" -> setPreviewSize(it.obj as Size)
                 }
             }
@@ -80,8 +80,10 @@ class MainActivity : AppCompatActivity() {
         requestList.apply {
             add(Manifest.permission.CAMERA)
             add(Manifest.permission.INTERNET)
-            add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            add(Manifest.permission.ACCESS_FINE_LOCATION)
+            add(Manifest.permission.ACCESS_WIFI_STATE)
+            add(Manifest.permission.CHANGE_WIFI_STATE)
         }
         if (requestList.isNotEmpty()) {
             PermissionX.init(this)
