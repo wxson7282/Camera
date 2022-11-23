@@ -55,8 +55,14 @@ class MainViewModel: ViewModel() {
                 when (it.type) {
                     Value.Msg.ClientConnectStatus -> {  //把客户端连接状态注入mediaCodecCallback
                         camera.mediaCodecCallback.isClientConnected = it.obj as Boolean
+                        buildMsg(it)        //转发到MainActivity
                     }
                 }
+            }
+        }
+        viewModelScope.launch {
+            wifiDirect.msgStateFlow.collect {
+                buildMsg(it)        // 转发来自wifiDirect的Msg
             }
         }
         // 启动通信服务进程

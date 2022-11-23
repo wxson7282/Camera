@@ -24,13 +24,13 @@ import okio.sink
 object BitmapUtils {
  private val tag = this.javaClass.simpleName
 
- fun toByteArray(bitmap: Bitmap): ByteArray {
+ private fun toByteArray(bitmap: Bitmap): ByteArray {
   val os = ByteArrayOutputStream()
   bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os)
   return os.toByteArray()
  }
 
- fun mirror(rawBitmap: Bitmap): Bitmap {
+ private fun mirror(rawBitmap: Bitmap): Bitmap {
   val matrix = Matrix()
   matrix.postScale(-1f, 1f)
   return Bitmap.createBitmap(rawBitmap, 0, 0, rawBitmap.width, rawBitmap.height, matrix, true)

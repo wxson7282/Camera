@@ -75,8 +75,7 @@ class ServerRunnable(private val coroutineChannel: Channel<ImageData>) : Runnabl
                     if (!clientSocket.isClosed) clientSocket.close()
                 } catch (e: IOException) {  // 因Socket is closed退出循环
                     break
-                }
-                catch (e: Exception) {
+                } catch (e: Exception) {
                     e.printStackTrace()
                     break
                 }

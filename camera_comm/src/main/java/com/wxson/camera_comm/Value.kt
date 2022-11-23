@@ -12,6 +12,6 @@ object Value {
     }
     object Msg {
         const val ClientInterruptRequest = "client interrupt request"
-        const val ClientConnectStatus = "is client connected"
+        const val ClientConnectStatus = "client connect status"
     }
 }

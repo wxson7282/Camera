@@ -29,7 +29,7 @@ class WifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
     private val wifiP2pManager: WifiP2pManager
     private val channel: WifiP2pManager.Channel
     private val receiver: BroadcastReceiver
-    val clientList = ArrayList<String>()
+    private val clientList = ArrayList<String>()
 
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg

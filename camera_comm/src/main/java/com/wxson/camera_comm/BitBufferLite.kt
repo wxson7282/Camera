@@ -15,7 +15,7 @@ class BitBufferLite(private var buffer: ByteBuffer) {
         return getBits(1) != 0
     }
 
-    fun getBits(nBits: Int): Int {
+    private fun getBits(nBits: Int): Int {
         require(!(nBits < 0 || nBits > 32))
         if (nBits == 0) {
             return 0

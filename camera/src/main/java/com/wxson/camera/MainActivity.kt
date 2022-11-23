@@ -7,10 +7,12 @@ import android.util.Size
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.permissionx.guolindev.PermissionX
 import com.wxson.camera.databinding.ActivityMainBinding
+import com.wxson.camera_comm.Value
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -23,6 +25,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(activityMainBinding.root)
+        setSupportActionBar(activityMainBinding.toolbar)
+
         @Suppress("DEPRECATION")
         window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
 
@@ -61,6 +65,7 @@ class MainActivity : AppCompatActivity() {
                 when (it.type) {
                     "msgStateFlow" -> showMsg(it.obj as String)
                     "setPreviewSize" -> setPreviewSize(it.obj as Size)
+                    Value.Msg.ClientConnectStatus -> setConnectStatus(it.obj as Boolean)
                 }
             }
         }
@@ -72,6 +77,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun setPreviewSize(size: Size) {
         activityMainBinding.textureView.setAspectRation(size.width, size.height)
+    }
+
+    private fun setConnectStatus(connected: Boolean) {
+        activityMainBinding.imageConnected.setImageDrawable(AppCompatResources.getDrawable(
+            this@MainActivity, if (connected) R.drawable.ic_connected else R.drawable.ic_disconnected))
     }
 
     // 申请权限
