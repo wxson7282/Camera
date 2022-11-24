@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import okio.*
 import java.net.ServerSocket
-import kotlin.concurrent.thread
 
 /**
  * @author wxson
@@ -36,6 +35,21 @@ class ServerRunnable(private val coroutineChannel: Channel<ImageData>) : Runnabl
         _msg.value = msg
     }
 
+    inner class OutputThread(private val bufferedSink: BufferedSink) : Thread() {
+        override fun run() {
+            runBlocking(outputJob) {
+                Log.i(tag, "outputJob start")
+                while (isActive) {
+                    // 接收来自MediaCodecCallback编码后的imageData数据
+                    val imageData = coroutineChannel.receive()                  //这是阻塞方法
+                    // 发送编码后的imageData数据
+                    writeImageData(bufferedSink, imageData)
+                }
+            }
+            Log.i(tag, "outputJob end")
+        }
+    }
+
     override fun run() {
         Log.i(tag, "run")
         runBlocking(acceptJob) {
@@ -44,35 +58,26 @@ class ServerRunnable(private val coroutineChannel: Channel<ImageData>) : Runnabl
                 try {
                     val clientSocket = serverSocket.accept()   //这是阻塞方法，接收到客户端请求后进入后续处理
                     buildMsg(Msg(Value.Msg.ClientConnectStatus, true))        //向ViewModel发出客户端已连接消息
-                    val bufferedSource: BufferedSource = clientSocket.source().buffer()
-                    val bufferedSink: BufferedSink = clientSocket.sink().buffer()
-                    //启动输出线程
-                    thread {
-                        runBlocking(outputJob) {
-                            Log.i(tag, "outputJob start")
-                            while (isActive) {
-                                // 接收来自MediaCodecCallback编码后的imageData数据
-                                val imageData = coroutineChannel.receive()                  //这是阻塞方法
-                                // 发送编码后的imageData数据
-                                writeImageData(bufferedSink, imageData)
+                    clientSocket.use {
+                        val bufferedSource: BufferedSource = clientSocket.source().buffer()
+                        val bufferedSink: BufferedSink = clientSocket.sink().buffer()
+                        //启动输出线程
+                        bufferedSink.use {
+                            OutputThread(it).start()
+                        }
+                        //输入协程，读取客户端信息，与serverSocket.accept()在同一线程，
+                        // 只有当inputJob中止后才能接收下一次客户端连接请求
+                        withContext(CoroutineScope(inputJob).coroutineContext) {
+                            Log.i(tag, "inputJob start")
+                            bufferedSource.use {
+                                while (isActive) {
+                                    val receivedMsg = readClientMsg(it)
+                                    msgHandle(receivedMsg)
+                                }
                             }
                         }
-                        Log.i(tag, "outputJob end")
+                        Log.i(tag, "inputJob end")
                     }
-                    //输入协程，读取客户端信息，与serverSocket.accept()在同一线程，
-                    // 只有当inputJob中止后才能接收下一次客户端连接请求
-                    withContext(CoroutineScope(inputJob).coroutineContext) {
-                        Log.i(tag, "inputJob start")
-                        while (isActive) {
-                            val receivedMsg = readClientMsg(bufferedSource)
-                            msgHandle(receivedMsg)
-                        }
-                    }
-                    Log.i(tag, "inputJob end")
-                    // inputJob取消后，执行以下代码
-                    if (bufferedSink.isOpen) bufferedSink.close()
-                    if (bufferedSource.isOpen) bufferedSource.close()
-                    if (!clientSocket.isClosed) clientSocket.close()
                 } catch (e: IOException) {  // 因Socket is closed退出循环
                     break
                 } catch (e: Exception) {
