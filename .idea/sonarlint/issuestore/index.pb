@@ -5,8 +5,6 @@ d
 4camera/src/main/java/com/wxson/camera/codec/Codec.kt,2\d\2dc650156b5c11a466eda5518a7a3266d402b9da
 x
 Hcamera_comm/src/main/java/com/wxson/camera_comm/IDirectActionListener.kt,e\e\eecfddacef4b5dbd68b7c17d4d62ce009976463d
-q
-Acamera/src/main/java/com/wxson/camera/codec/MediaCodecCallback.kt,e\9\e99fab988c3d8f51c1aa9a07ddf62660e44db856
 l
 <camera_comm/src/main/java/com/wxson/camera_comm/ImageData.kt,2\4\24ffb9843597ac274549138b5652055630548ef3
 r
@@ -15,8 +13,6 @@ N
 camera_comm/proguard-rules.pro,f\d\fde5dcd07c7cb398f502720a0e92190490e0f7d2
 F
 camera_comm/.gitignore,3\4\348adeff56d9d2e2e379a5d209f402406cdbd90c
-C
-camera/build.gradle,c\5\c5ee167eeb33f015456b90564a7b8193a0405ace
 
 Qcamera_comm/src/androidTest/java/com/wxson/camera_comm/ExampleInstrumentedTest.kt,2\f\2f250879502d8775120afd490e212608a678ecc4
 m
@@ -51,7 +47,9 @@ z
 Jcamera_comm/src/main/java/com/wxson/camera_comm/DirectBroadcastReceiver.kt,5\3\53c3523b961a67cbaff338cd56aae87653c4c08c
 h
 8camera_comm/src/main/java/com/wxson/camera_comm/Value.kt,3\2\3262d180b2df678c1bd708e1ea18f38d09360174
-S
-#camera/src/main/AndroidManifest.xml,d\0\d0d16283f8309a9b30c17c0eb239670124f8746d
-e
-5camera/src/main/java/com/wxson/camera/MainActivity.kt,1\3\13975fc0d1afa5aa049e838d0805ccfc3ff07221
+f
+6camera/src/main/java/com/wxson/camera/MainViewModel.kt,6\9\69c2d73758ebc1ce64cc7a4e452d413a0f258748
+q
+Acamera/src/main/java/com/wxson/camera/codec/MediaCodecCallback.kt,e\9\e99fab988c3d8f51c1aa9a07ddf62660e44db856
+f
+6camera/src/main/java/com/wxson/camera/camera/Camera.kt,8\e\8ef9d7836bf0caeeeb7f0e5ac9a9a187e83ac073

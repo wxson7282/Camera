@@ -4,4 +4,14 @@
     <string name="zoomOut">➖</string>
     <string name="takePic">拍照</string>
     <string name="exchangeCamera">切换镜头</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <string name="setting">设置</string>
+
+    <!-- Preference Titles -->
+    <string name="image_size_header">图像传输分辨率</string>
+
+    <!-- Image Size Preferences -->
+    <string name="image_size_title">选择分辨率</string>
+
 </resources>
