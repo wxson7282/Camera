@@ -13,9 +13,9 @@ import java.nio.ByteBuffer
 object H265Format {
     private const val mime = MediaFormat.MIMETYPE_VIDEO_HEVC
 
-    fun getEncodeFormat(previewSize: Size) : MediaFormat {
-        val width = previewSize.width
-        val height = previewSize.height
+    fun getEncodeFormat(transmissionSize: Size) : MediaFormat {
+        val width = transmissionSize.width
+        val height = transmissionSize.height
         val frameRate = 30
         val frameInterval = 0
         val bitRateFactor = 10

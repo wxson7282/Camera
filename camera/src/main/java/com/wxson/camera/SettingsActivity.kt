@@ -1,6 +1,5 @@
 package com.wxson.camera
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
@@ -23,7 +22,7 @@ class SettingsActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             android.R.id.home -> {
-                startActivity(Intent(this, MainActivity::class.java))
+                finish()
             }
         }
         return true

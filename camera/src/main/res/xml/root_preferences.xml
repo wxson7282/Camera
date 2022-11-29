@@ -2,10 +2,10 @@
 
     <PreferenceCategory app:title="@string/image_size_header">
         <ListPreference
-            app:defaultValue="size"
+            app:defaultValue="640*480"
             app:entries="@array/image_size_entries"
             app:entryValues="@array/image_size_values"
-            app:key="size"
+            app:key="size_list"
             app:title="@string/image_size_title"
             app:useSimpleSummaryProvider="true" />
     </PreferenceCategory>

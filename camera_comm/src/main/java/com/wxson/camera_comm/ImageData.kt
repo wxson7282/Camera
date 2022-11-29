@@ -12,8 +12,8 @@ class ImageData(var mime: ByteArray = byteArrayOf(0x00),
                 var bufferInfoOffset: Int = 0,
                 var bufferInfoPresentationTimeUs: Long = 0L,
                 var bufferInfoSize: Int = 0,
-                var previewWidth: Int = 0,
-                var previewHeight: Int = 0,
+                var width: Int = 0,
+                var height: Int = 0,
                 var byteArray: ByteArray = byteArrayOf(0x00)) : Serializable {
 
     override fun toString(): String {

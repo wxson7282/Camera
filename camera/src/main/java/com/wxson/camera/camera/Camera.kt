@@ -19,6 +19,7 @@ import android.util.Size
 import android.view.Surface
 import android.view.TextureView
 import androidx.core.content.ContextCompat
+import androidx.preference.PreferenceManager
 import com.wxson.camera_comm.Msg
 import com.wxson.camera.MyApplication
 import com.wxson.camera.codec.Codec
@@ -79,6 +80,7 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
     private val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
             Log.i(tag, "onSurfaceTextureSizeChanged")
+            Log.i(tag, "width=$width height=$height")
         }
 
         override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
@@ -93,6 +95,7 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
 
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
             Log.i(tag, "onSurfaceTextureAvailable")
+            Log.i(tag, "width=$width height=$height")
             surfaceTexture = surface
             textureViewWidth = width
             textureViewHeight = height
@@ -274,8 +277,14 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
 
         imageReader = ImageReader.newInstance(savePicSize.width, savePicSize.height, ImageFormat.JPEG, 1)
         imageReader?.setOnImageAvailableListener(onImageAvailableListener, cameraHandler)
-        // 定义编码器回调
-        mediaCodecCallback = MediaCodecCallback(videoCodecMime, previewSize, coroutineChannel)
+        // 定义编码器回调，从Image Size Preference中取得图传size
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MyApplication.context)
+        val videoCodecSizeString = sharedPreferences.getString("size_list", "640*480")
+        videoCodecSizeString?.let {
+            val (width, height) = it.split("*")
+            val imageSize =Size(width.toInt(), height.toInt())
+            mediaCodecCallback = MediaCodecCallback(videoCodecMime, imageSize, coroutineChannel)
+        }
 
         openCamera()
     }

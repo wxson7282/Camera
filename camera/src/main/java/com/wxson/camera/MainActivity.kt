@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.preference.PreferenceManager
 import com.permissionx.guolindev.PermissionX
 import com.wxson.camera.databinding.ActivityMainBinding
 import com.wxson.camera_comm.Value
@@ -36,6 +37,8 @@ class MainActivity : AppCompatActivity() {
         requestPermission()
 
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
+        PreferenceManager.setDefaultValues(this, R.xml.root_preferences, false)
 
         @Suppress("DEPRECATION")
         val mainActivityDisplayRotation =
@@ -81,6 +84,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            // 从SettingsActivity返回后，如果设定ImageSize发生变更，应该重新建立MediaCodecCallback的实例。目前尚未实现。
             R.id.settings -> {
                 startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
             }

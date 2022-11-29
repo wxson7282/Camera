@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
  * @date 2022/10/22
  * @apiNote
  */
-class MediaCodecCallback(private val mime: String, private val previewSize: Size, private val coroutineChannel: Channel<ImageData>) : MediaCodec.Callback() {
+class MediaCodecCallback(private val mime: String, private val imageSize: Size, private val coroutineChannel: Channel<ImageData>) : MediaCodec.Callback() {
     private val tag = this.javaClass.simpleName
     private lateinit var firstFrameCsd: ByteArray
     var isClientConnected = false
@@ -36,9 +36,9 @@ class MediaCodecCallback(private val mime: String, private val previewSize: Size
                 getCsd(it)?.let { csd -> firstFrameCsd = csd }
                 imageData.csd = firstFrameCsd
                 imageData.mime = mime.toByteArray()
-                //byteBufferTransfer.previewSize = previewSize
-                imageData.previewWidth = previewSize.width
-                imageData.previewHeight = previewSize.height
+                //imageSize
+                imageData.width = imageSize.width
+                imageData.height = imageSize.height
                 //从imageData中取出byte[]
                 val bytes = ByteArray(it.remaining())
                 it.get(bytes)
