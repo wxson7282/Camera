@@ -22,7 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import com.wxson.camera_comm.Msg
 import com.wxson.camera.MyApplication
-import com.wxson.camera.codec.Codec
+import com.wxson.camera.codec.Encoder
 import com.wxson.camera.codec.MediaCodecCallback
 import com.wxson.camera.util.BitmapUtils
 import com.wxson.camera_comm.ImageData
@@ -72,6 +72,7 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
     private var stepHeight: Float = 0f                                 // 每次改变的高度大小
     private val videoCodecMime = MediaFormat.MIMETYPE_VIDEO_HEVC
 
+    lateinit var encoder: Encoder
     lateinit var mediaCodecCallback: MediaCodecCallback
 
     private val _msg = MutableStateFlow(Msg("", null))
@@ -143,6 +144,7 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
     }
 
     fun release() {
+        encoder.release()
         releaseCamera()
         releaseThread()
     }
@@ -383,7 +385,7 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
 
         previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         // 建立视频编码器
-        val codec = Codec(this.previewSize, mediaCodecCallback)
+        encoder = Encoder(this.previewSize, mediaCodecCallback)
 
         val previewSurface = Surface(surfaceTexture)
         previewRequestBuilder?.let {
@@ -411,7 +413,7 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             val outputConfigurations = listOf(
                 OutputConfiguration(previewSurface),
-                OutputConfiguration(codec.encoderInputSurface),
+                OutputConfiguration(encoder.encoderInputSurface),
                 OutputConfiguration(imageReader!!.surface))
             val executor = MyApplication.context.mainExecutor
             cameraDevice.createCaptureSession(SessionConfiguration(SessionConfiguration.SESSION_REGULAR,
@@ -420,7 +422,7 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
             @Suppress("DEPRECATION")
             cameraDevice.createCaptureSession(arrayListOf(
                 previewSurface,
-                codec.encoderInputSurface,
+                encoder.encoderInputSurface,
                 imageReader?.surface), stateCallback, cameraHandler)
         }
     }

@@ -16,7 +16,7 @@ import com.wxson.camera_comm.H265Format
  *     格式化编码器
  *     启动编码器
  */
-class Codec(transmissionSize: Size, mediaCodecCallback: MediaCodecCallback) {
+class Encoder(imageSize: Size, mediaCodecCallback: MediaCodecCallback) {
     private val tag = this.javaClass.simpleName
     private val videoCodecMime = MediaFormat.MIMETYPE_VIDEO_HEVC
     private val mediaCodec = MediaCodec.createEncoderByType(videoCodecMime) // 创建H265格式视频编码器
@@ -28,7 +28,7 @@ class Codec(transmissionSize: Size, mediaCodecCallback: MediaCodecCallback) {
         //mediaCodec.setCallback(MediaCodecCallback(videoCodecMime, previewSize))
         mediaCodec.setCallback(mediaCodecCallback)
         //set up output mediaFormat
-        val codecFormat = H265Format.getEncodeFormat(transmissionSize)
+        val codecFormat = H265Format.getEncodeFormat(imageSize)
         // configure mediaCodec
         mediaCodec.configure(codecFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         // Set up Surface for the Encoder
@@ -37,5 +37,10 @@ class Codec(transmissionSize: Size, mediaCodecCallback: MediaCodecCallback) {
         // 启动编码器
         mediaCodec.start()
         Log.i(tag, "mediaCodec started")
+    }
+
+    fun release() {
+        mediaCodec.stop()
+        mediaCodec.release()
     }
 }

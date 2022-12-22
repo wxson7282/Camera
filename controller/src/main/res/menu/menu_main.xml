@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.wxson.controller.MainActivity">
+
+    <item
+        android:id="@+id/menuDisplay"
+        android:title="@string/menuDisplay"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menuDirectDiscover"
+        android:title="@string/menuDirectDiscover"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/menuDirectEnable"
+        android:title="@string/menuDirectEnable"
+        app:showAsAction="ifRoom" />
+
+
+</menu>

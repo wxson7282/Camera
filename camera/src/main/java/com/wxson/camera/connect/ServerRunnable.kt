@@ -22,7 +22,7 @@ import java.net.ServerSocket
  * 当inputJob被取消后，释放资源，重新准备接收下一次客户端请求。
  * 由于阻塞方法只能运行在阻塞协程域中，所以父子协程中分别用runBlocking实现
  */
-class ServerRunnable(private val coroutineChannel: Channel<ImageData>) : Runnable {
+class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnable {
     private val tag = this.javaClass.simpleName
     private val serverSocket = ServerSocket(Value.Int.serverSocketPort)
     private val inputJob by lazy { Job() }
@@ -41,7 +41,7 @@ class ServerRunnable(private val coroutineChannel: Channel<ImageData>) : Runnabl
                 Log.i(tag, "outputJob start")
                 while (isActive) {
                     // 接收来自MediaCodecCallback编码后的imageData数据
-                    val imageData = coroutineChannel.receive()                  //这是阻塞方法
+                    val imageData = imageDataChannel.receive()                  //这是阻塞方法
                     // 发送编码后的imageData数据
                     writeImageData(bufferedSink, imageData)
                 }
@@ -57,7 +57,7 @@ class ServerRunnable(private val coroutineChannel: Channel<ImageData>) : Runnabl
             while (isActive) {
                 try {
                     val clientSocket = serverSocket.accept()   //这是阻塞方法，接收到客户端请求后进入后续处理
-                    buildMsg(Msg(Value.Msg.ClientConnectStatus, true))        //向ViewModel发出客户端已连接消息
+                    buildMsg(Msg(Value.Message.ConnectStatus, true))        //向ViewModel发出客户端已连接消息
                     clientSocket.use {
                         val bufferedSource: BufferedSource = clientSocket.source().buffer()
                         val bufferedSink: BufferedSink = clientSocket.sink().buffer()
@@ -111,7 +111,7 @@ class ServerRunnable(private val coroutineChannel: Channel<ImageData>) : Runnabl
 
     private fun msgHandle(receivedMsg: String) {
         when (receivedMsg) {
-            Value.Msg.ClientInterruptRequest -> {      //客户端中断请求
+            Value.Message.ClientInterruptRequest -> {      //客户端中断请求
                 outputJob.cancel()
                 inputJob.cancel()
             }

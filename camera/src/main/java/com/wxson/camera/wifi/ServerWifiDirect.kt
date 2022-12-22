@@ -12,10 +12,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.wxson.camera.MyApplication
 import com.wxson.camera.R
-import com.wxson.camera_comm.DirectBroadcastReceiver
-import com.wxson.camera_comm.IDirectActionListener
-import com.wxson.camera_comm.Msg
-import com.wxson.camera_comm.setDeviceName
+import com.wxson.camera_comm.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -24,7 +21,7 @@ import kotlinx.coroutines.flow.StateFlow
  * @date 2022/11/1
  * @apiNote
  */
-class WifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
+class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
     private val tag = this.javaClass.simpleName
     private val wifiP2pManager: WifiP2pManager
     private val channel: WifiP2pManager.Channel
@@ -58,18 +55,18 @@ class WifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
         if (ActivityCompat.checkSelfPermission(MyApplication.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.i(tag, "需要申请ACCESS_FINE_LOCATION权限")
             // Do not have permissions, request them now
-            buildMsg(Msg("msgStateFlow", "需要申请ACCESS_FINE_LOCATION权限"))
+            buildMsg(Msg(Value.Message.MsgShow, "需要申请ACCESS_FINE_LOCATION权限"))
             return
         }
         wifiP2pManager.createGroup(channel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 Log.i(tag, "createGroup onSuccess")
-                buildMsg(Msg("msgStateFlow", "group is formed"))
+                buildMsg(Msg(Value.Message.MsgShow, "group is formed"))
             }
 
             override fun onFailure(reason: Int) {
                 Log.i(tag, "createGroup onFailure: $reason")
-                buildMsg(Msg("msgStateFlow", "createGroup onFailure"))
+                buildMsg(Msg(Value.Message.MsgShow, "createGroup onFailure"))
             }
         })
     }
@@ -81,19 +78,19 @@ class WifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
                 Log.i(tag, "removeGroup onSuccess")
                 clearClientList()
                 // notify MediaCodecCallback of connect status
-                buildMsg(Msg("msgStateFlow", "group is not formed"))
+                buildMsg(Msg(Value.Message.MsgShow, "group is not formed"))
             }
 
             override fun onFailure(reason: Int) {
                 Log.i(tag, "removeGroup onFailure")
-                buildMsg(Msg("msgStateFlow", "removeGroup onFailure"))
+                buildMsg(Msg(Value.Message.MsgShow, "removeGroup onFailure"))
             }
         })
     }
 
     private fun clearClientList() {
         clientList.clear()
-        buildMsg(Msg("msgStateFlow", "clientList Cleared"))
+        buildMsg(Msg(Value.Message.MsgShow, "clientList Cleared"))
     }
 
     private fun unregisterBroadcastReceiver() {
@@ -112,14 +109,14 @@ class WifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
         Log.i(tag, "onConnectionInfoAvailable=$wifiP2pInfo")
 
         if (wifiP2pInfo.groupFormed) {
-            buildMsg(Msg("msgStateFlow", "group is formed"))
+            buildMsg(Msg(Value.Message.MsgShow, "group is formed"))
         } else {
             Log.i(tag, "未建组！")
-            buildMsg(Msg("msgStateFlow", "group is not formed"))
+            buildMsg(Msg(Value.Message.MsgShow, "group is not formed"))
         }
         if (!wifiP2pInfo.isGroupOwner) {
             Log.i(tag, "本机不是组长！")
-            buildMsg(Msg("msgStateFlow", "本机不是组长！"))
+            buildMsg(Msg(Value.Message.MsgShow, "本机不是组长！"))
         }
         // 启动通信服务进程
         //serverThread.start()

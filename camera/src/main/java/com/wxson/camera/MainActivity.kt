@@ -71,7 +71,7 @@ class MainActivity : AppCompatActivity() {
                 when (it.type) {
                     "msgStateFlow" -> showMsg(it.obj as String)
                     "setPreviewSize" -> setPreviewSize(it.obj as Size)
-                    Value.Msg.ClientConnectStatus -> setConnectStatus(it.obj as Boolean)
+                    Value.Message.ConnectStatus -> setConnectStatus(it.obj as Boolean)
                 }
             }
         }

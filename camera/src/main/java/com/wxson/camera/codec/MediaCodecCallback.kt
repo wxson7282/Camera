@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
  * @date 2022/10/22
  * @apiNote
  */
-class MediaCodecCallback(private val mime: String, private val imageSize: Size, private val coroutineChannel: Channel<ImageData>) : MediaCodec.Callback() {
+class MediaCodecCallback(private val mime: String, private val imageSize: Size, private val imageDataChannel: Channel<ImageData>) : MediaCodec.Callback() {
     private val tag = this.javaClass.simpleName
     private lateinit var firstFrameCsd: ByteArray
     var isClientConnected = false
@@ -47,10 +47,10 @@ class MediaCodecCallback(private val mime: String, private val imageSize: Size, 
                 imageData.bufferInfoOffset = info.offset
                 imageData.bufferInfoPresentationTimeUs = info.presentationTimeUs
                 imageData.bufferInfoSize = info.size
-                // send byteBufferTransfer to ServerRunnable by coroutineChannel
+                // send byteBufferTransfer to ServerRunnable by imageDataChannel
                 CoroutineScope(Job()).launch {
                     //启动帧数据传输
-                    coroutineChannel.send(imageData)
+                    imageDataChannel.send(imageData)
                 }
             }
         }
@@ -59,6 +59,7 @@ class MediaCodecCallback(private val mime: String, private val imageSize: Size, 
 
     override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
         Log.i(tag, "onError")
+        codec.reset()
     }
 
     override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {

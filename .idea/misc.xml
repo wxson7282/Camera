@@ -13,6 +13,25 @@
         <entry key="..\:/AndroidStudioProjects/Camera/camera/src/main/res/layout/settings_activity.xml" value="0.20104166666666667" />
         <entry key="..\:/AndroidStudioProjects/Camera/camera/src/main/res/menu/menu_main.xml" value="0.32395833333333335" />
         <entry key="..\:/AndroidStudioProjects/Camera/camera/src/main/res/xml/root_preferences.xml" value="0.33" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/drawable/ic_connected.xml" value="0.1" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/drawable/ic_disconnected.xml" value="0.1" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/layout/activity_connect.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/layout/activity_main.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/layout/activity_test.xml" value="0.23541666666666666" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/layout/content_test.xml" value="0.23541666666666666" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/layout/fragment_main.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/layout/item_device.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/menu/menu.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/control/src/main/res/menu/menu_main.xml" value="0.33" />
+        <entry key="..\:/AndroidStudioProjects/Camera/controller/src/main/res/drawable/ic_connected.xml" value="0.1" />
+        <entry key="..\:/AndroidStudioProjects/Camera/controller/src/main/res/layout/activity_main.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/controller/src/main/res/layout/fragment_connect.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/controller/src/main/res/layout/fragment_main.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/controller/src/main/res/layout/item_device.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/controller/src/main/res/menu/menu_main.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/myapplication/src/main/res/layout/activity_main.xml" value="0.325" />
+        <entry key="..\:/AndroidStudioProjects/Camera/myapplication/src/main/res/layout/content_main.xml" value="0.24635416666666668" />
+        <entry key="..\:/AndroidStudioProjects/Camera/myapplication/src/main/res/layout/fragment_main.xml" value="0.325" />
         <entry key="..\:/AndroidStudioProjects/Camera/zoom_test/src/main/res/layout/activity_main.xml" value="0.25" />
       </map>
     </option>

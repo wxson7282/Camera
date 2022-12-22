@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">控制器</string>
+    <string name="zoomIn">➕</string>
+    <string name="zoomOut">➖</string>
+    <string name="takePic">拍照</string>
+    <string name="exchangeCamera">切换镜头</string>
+    <string name="localDeviceInfo">本设备信息</string>
+    <string name="DeviceName">设备名称：</string>
+    <string name="MacAddress">MAC地址：</string>
+    <string name="DeviceStatus">设备状态：</string>
+    <string name="wifiP2pInfo">Wifi-P2p信息</string>
+    <string name="IpAddress">群主IP：</string>
+    <string name="IsGroupOwner">本设备是否群主：</string>
+    <string name="GroupFormed">群是否建立：</string>
+    <string name="RemoteDeviceName">对方设备名称：</string>
+    <string name="RemoteDeviceAddress">对方设备地址：</string>
+    <string name="DeviceList">设备列表</string>
+    <string name="Spaces">____</string>
+    <string name="menuDirectEnable">Wifi开关</string>
+    <string name="menuDirectDiscover">搜索</string>
+    <string name="menuDisplay">显示</string>
+    <string name="settings">Settings</string>
+    <string name="title_activity_test">TestActivity</string>
+
+</resources>

@@ -1,4 +1,4 @@
-package com.wxson.camera.camera
+package com.wxson.camera_comm
 
 import android.content.Context
 import android.util.AttributeSet
