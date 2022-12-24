@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">控制器</string>
-    <string name="zoomIn">➕</string>
-    <string name="zoomOut">➖</string>
+    <string name="zoomIn">＋</string>
+    <string name="zoomOut">－</string>
     <string name="takePic">拍照</string>
     <string name="exchangeCamera">切换镜头</string>
     <string name="localDeviceInfo">本设备信息</string>

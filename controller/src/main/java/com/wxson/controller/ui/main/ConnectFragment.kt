@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.wxson.camera_comm.Value
 import com.wxson.camera_comm.WifiP2pUtil
@@ -41,7 +42,10 @@ class ConnectFragment : Fragment() {
         Log.i(tag, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
-        binding!!.rvDeviceList.adapter = viewModel.getDeviceAdapter()
+        binding?.let {
+            it.rvDeviceList.layoutManager = LinearLayoutManager(this.context)
+            it.rvDeviceList.adapter = viewModel.getDeviceAdapter()
+        }
 
         spaces = resources.getString(R.string.Spaces)
 
