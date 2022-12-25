@@ -60,7 +60,7 @@ class SharedViewModel : ViewModel() {
         Log.i(tag, "init")
         wifiP2pDeviceList.clear()
         deviceAdapter = DeviceAdapter(wifiP2pDeviceList)
-        clientWifiDirect = ClientWifiDirect(deviceAdapter)
+        clientWifiDirect = ClientWifiDirect(deviceAdapter, wifiP2pDeviceList)
         deviceAdapter.setClickListener(clientWifiDirect.deviceAdapterItemClickListener)
         decoder = Decoder.getInstance(MediaCodecCallback(imageDataChannel))
 

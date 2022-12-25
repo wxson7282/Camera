@@ -25,8 +25,6 @@ i
 9camera/src/main/java/com/wxson/camera/util/BitmapUtils.kt,e\3\e338ea233fdaa2b7fa9e7accc3cbe3807c8fc8c7
 n
 >camera_comm/src/main/java/com/wxson/camera_comm/CommonTools.kt,9\0\90851a85c2f2f9c076b2609f212fb89b0e6bb86d
-f
-6camera_comm/src/main/java/com/wxson/camera_comm/Msg.kt,8\5\85e18fd0ed957924f5003d58514d9180c71169a3
 i
 9camera/src/main/java/com/wxson/camera/SettingsActivity.kt,7\4\7422efe587f6383c80dfa110321df020c866b0e6
 C
@@ -53,8 +51,6 @@ y
 Icontroller/src/main/java/com/wxson/controller/codec/MediaCodecCallback.kt,1\8\185877619467ad7671cc76f305a72d752767f695
 n
 >controller/src/main/java/com/wxson/controller/MyApplication.kt,f\d\fd61efd3ac5d840147b9e98d174561eaaa2728fd
-s
-Ccontroller/src/main/java/com/wxson/controller/wifi/DeviceAdapter.kt,9\0\904376ceb4fc2df4f20a5d86607751704d73930b
 h
 8camera_comm/src/main/java/com/wxson/camera_comm/Value.kt,3\2\3262d180b2df678c1bd708e1ea18f38d09360174
 n
@@ -79,5 +75,13 @@ p
 @controller/src/test/java/com/wxson/controller/ExampleUnitTest.kt,7\3\73a8725e6e3155ef33026bd33b2ac55575f83fed
 M
 controller/proguard-rules.pro,d\e\def160fe89aa75b090ba7e31fc343568d8802cf3
+W
+'controller/src/main/AndroidManifest.xml,6\1\612f21b943ae10ede436e8208b8fc66fcc1ffb75
+s
+Ccontroller/src/main/java/com/wxson/controller/wifi/DeviceAdapter.kt,9\0\904376ceb4fc2df4f20a5d86607751704d73930b
+f
+6camera_comm/src/main/java/com/wxson/camera_comm/Msg.kt,8\5\85e18fd0ed957924f5003d58514d9180c71169a3
+x
+Hcontroller/src/main/java/com/wxson/controller/ui/main/ConnectFragment.kt,f\6\f6e5f3392442aa8802998492ce5c9aba42134887
 m
 =controller/src/main/java/com/wxson/controller/MainActivity.kt,8\3\832774841a70df5ffa74bc284a4bb644e7d0956e

@@ -22,24 +22,33 @@ import java.util.ArrayList
  * @date 2022/12/2
  * @apiNote
  */
-class ClientWifiDirect(private val deviceAdapter: DeviceAdapter) : WifiP2pManager.ChannelListener, IDirectActionListener {
+class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wifiP2pDeviceList: ArrayList<WifiP2pDevice>) :
+    WifiP2pManager.ChannelListener, IDirectActionListener {
     private val tag = this.javaClass.simpleName
     private val wifiP2pManager: WifiP2pManager
     private val channel: WifiP2pManager.Channel
     private val receiver: BroadcastReceiver
     private var wifiP2pEnabled = false
     private var remoteDevice: WifiP2pDevice? = null
-    private val wifiP2pDeviceList = ArrayList<WifiP2pDevice>()
 
+    ////region attributes
+    //private val wifiP2pDeviceList = ArrayList<WifiP2pDevice>()
+    //fun getWifiP2pDeviceList(): ArrayList<WifiP2pDevice> {
+    //    return this.wifiP2pDeviceList
+    //}
+    ////endregion
+
+    //region communication
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
     private fun buildMsg(msg: Msg) {
         _msg.value = msg
     }
+    //endregion
 
     init {
         Log.i(tag, "init")
-        wifiP2pManager =  MyApplication.context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
+        wifiP2pManager = MyApplication.context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
         channel = wifiP2pManager.initialize(MyApplication.context, Looper.getMainLooper(), this)
         wifiP2pManager.setDeviceName(channel, MyApplication.context.getString(R.string.app_name))
         receiver = DirectBroadcastReceiver(wifiP2pManager, channel, this)
@@ -48,7 +57,7 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter) : WifiP2pManage
 
     }
 
-    val deviceAdapterItemClickListener = object : DeviceAdapter.OnClickListener{
+    val deviceAdapterItemClickListener = object : DeviceAdapter.OnClickListener {
         override fun onItemClick(position: Int) {
             remoteDevice = wifiP2pDeviceList[position]
             buildMsg(Msg(Value.Message.MsgShow, remoteDevice!!.deviceName + "将要连接"))
@@ -67,7 +76,7 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter) : WifiP2pManage
         buildMsg(Msg(Value.Message.ShowSnack, "正在搜索附近设备"))
         clearWifiP2pDeviceList()
         //搜寻附近带有 Wi-Fi P2P 的设备
-        wifiP2pManager.discoverPeers(channel, object : WifiP2pManager.ActionListener{
+        wifiP2pManager.discoverPeers(channel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 buildMsg(Msg(Value.Message.MsgShow, "discoverPeers success"))
             }
@@ -124,7 +133,7 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter) : WifiP2pManage
     }
 
     override fun onSelfDeviceAvailable(selfDevice: WifiP2pDevice) {
-        Log.i(tag, "onSelfDeviceAvailable" )
+        Log.i(tag, "onSelfDeviceAvailable")
         buildMsg(Msg(Value.Message.ShowSelfDeviceInfo, selfDevice))
     }
 
@@ -182,7 +191,7 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter) : WifiP2pManage
 
     }
 
-    private fun getGetConnectFailureReason(reasonCode: Int) : String {
+    private fun getGetConnectFailureReason(reasonCode: Int): String {
         return when (reasonCode) {
             WifiP2pManager.ERROR -> "ERROR"
             WifiP2pManager.P2P_UNSUPPORTED -> "P2P_UNSUPPORTED"
