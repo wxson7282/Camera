@@ -36,7 +36,7 @@ import java.util.*
  * @date 2022/9/28
  * @apiNote
  */
-class Camera(private val coroutineChannel: Channel<ImageData>) {
+class Camera(private val imageDataChannel: Channel<ImageData>) {
 
     companion object {
         const val PREVIEW_WIDTH = 1080                                         //预览的宽度
@@ -70,8 +70,6 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
     private val zoomStep = 20
     private var stepWidth: Float = 0f                                  // 每次改变的宽度大小
     private var stepHeight: Float = 0f                                 // 每次改变的高度大小
-    private val videoCodecMime = MediaFormat.MIMETYPE_VIDEO_HEVC
-
     lateinit var encoder: Encoder
     lateinit var mediaCodecCallback: MediaCodecCallback
 
@@ -282,10 +280,11 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
         // 定义编码器回调，从Image Size Preference中取得图传size
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MyApplication.context)
         val videoCodecSizeString = sharedPreferences.getString("size_list", "640*480")
+        val videoCodecMime = sharedPreferences.getString("format_list", MediaFormat.MIMETYPE_VIDEO_AVC)
         videoCodecSizeString?.let {
             val (width, height) = it.split("*")
             val imageSize =Size(width.toInt(), height.toInt())
-            mediaCodecCallback = MediaCodecCallback(videoCodecMime, imageSize, coroutineChannel)
+            mediaCodecCallback = MediaCodecCallback(videoCodecMime?:MediaFormat.MIMETYPE_VIDEO_AVC, imageSize, imageDataChannel)
         }
 
         openCamera()
@@ -390,6 +389,7 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
         val previewSurface = Surface(surfaceTexture)
         previewRequestBuilder?.let {
             it.addTarget(previewSurface)  // 将CaptureRequest的构建器与Surface对象绑定在一起
+            it.addTarget(encoder.encoderInputSurface)
             it.set(CaptureRequest.CONTROL_AE_MODE, CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH)      // 闪光灯
             it.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE) // 自动对焦
         }
@@ -425,6 +425,9 @@ class Camera(private val coroutineChannel: Channel<ImageData>) {
                 encoder.encoderInputSurface,
                 imageReader?.surface), stateCallback, cameraHandler)
         }
+        // 启动编码器
+        encoder.start()
+
     }
 
     /*

@@ -26,11 +26,11 @@ class ClientRunnable(
     private val serverIp: String,
     private val imageDataChannel: Channel<ImageData>,
     private val msgChannel: Channel<String>
-    ) : Runnable {
+) : Runnable {
     private val tag = this.javaClass.simpleName
     private val mainJob by lazy { Job() }
     private val inputJob by lazy { Job() }
-    private val outputJob  by lazy { Job() }
+    private val outputJob by lazy { Job() }
     private lateinit var socket: Socket
 
     private val _msg = MutableStateFlow(Msg("", null))
@@ -45,9 +45,9 @@ class ClientRunnable(
                 Log.i(tag, "outputJob start")
                 while (isActive) {
                     // 接收本机(客户端)发出的各种信息
-                    val msg = msgChannel.receive()
+                    val msgString = msgChannel.receive()
                     // 输出到服务器
-                    writeMessage(bufferedSink, msg)
+                    writeMessage(bufferedSink, msgString)
                 }
             }
             Log.i(tag, "outputJob end")
@@ -65,26 +65,21 @@ class ClientRunnable(
                     val bufferedSource: BufferedSource = it.source().buffer()
                     val bufferedSink: BufferedSink = it.sink().buffer()
                     //启动输出线程
-                    bufferedSink.use {
-                        OutputThread(bufferedSink).start()
-                    }
-                    //输入协程，读取server发出的imageData
-                    CoroutineScope(inputJob).launch {
-                        Log.i(tag, "inputJob start")
-                        var isFirstImageData = true
-                        bufferedSource.use {
-                            while (isActive) {
-                                val imageData = readImageData(bufferedSource)
-                                // 如果读取失败则丢弃
-                                imageData?.let {
-                                    if (isFirstImageData) {     //如果是第一帧图像数据，则通知调用者配置解码器，并且启动。
-                                        buildMsg(Msg(Value.Message.ConfigAndStartDecoder, imageData))
-                                        isFirstImageData = false
-                                        delay(100)  //需要给解码器一点时间
-                                    }
-                                    imageDataChannel.send(imageData)
-                                }
+                    OutputThread(bufferedSink).start()
+                    //输入处理，读取server发出的imageData
+                    Log.i(tag, "inputJob start")
+                    var isFirstImageData = true
+                    while (isActive) {
+                        val imageData = readImageData(bufferedSource)
+                        // 如果读取失败则丢弃
+                        imageData?.let {
+                            if (isFirstImageData) {     //如果是第一帧图像数据，则通知调用者配置解码器，并且启动。
+                                Log.i(tag, "First imageData arrived")
+                                buildMsg(Msg(Value.Message.ConfigAndStartDecoder, imageData))
+                                isFirstImageData = false
+                                delay(100)  //需要给解码器一点时间
                             }
+                            imageDataChannel.send(imageData)
                         }
                     }
                     Log.i(tag, "inputJob end")
@@ -92,6 +87,7 @@ class ClientRunnable(
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            Log.i(tag, "mainJob end")
         }
         Log.i(tag, "ClientRunnable end")
     }
@@ -104,7 +100,7 @@ class ClientRunnable(
         }
     }
 
-    private fun readImageData(bufferedSource: BufferedSource) : ImageData? {
+    private fun readImageData(bufferedSource: BufferedSource): ImageData? {
         try {
             val byteString = bufferedSource.readByteString()
             return CommonTools.byteStringToObject(byteString) as ImageData

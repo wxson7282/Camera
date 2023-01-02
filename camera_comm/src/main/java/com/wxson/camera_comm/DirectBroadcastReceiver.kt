@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 //import android.net.NetworkInfo
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pManager
@@ -73,21 +74,22 @@ class DirectBroadcastReceiver(
             }
             // indicating that the state of Wi-Fi p2p connectivity has changed.
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-                //val networkInfo = intent.getParcelableExtra<NetworkInfo>(WifiP2pManager.EXTRA_NETWORK_INFO)
-                //if (networkInfo != null && networkInfo.isConnected) {
-                //    wifiP2pManager.requestConnectionInfo(channel) { wifiP2pInfo -> directActionListener.onConnectionInfoAvailable(wifiP2pInfo) }
-                //    Log.i(runningTag, "已连接p2p设备")
-                //} else {
-                //    Log.i(runningTag, "与p2p设备已断开连接")
-                //    directActionListener.onDisconnection()
-                //}
-                if (isConnected(context)) {
+                Log.i(runningTag, "WIFI_P2P_CONNECTION_CHANGED_ACTION")
+                val networkInfo = intent.getParcelableExtra<NetworkInfo>(WifiP2pManager.EXTRA_NETWORK_INFO)
+                if (networkInfo != null && networkInfo.isConnected) {
                     wifiP2pManager.requestConnectionInfo(channel) { wifiP2pInfo -> directActionListener.onConnectionInfoAvailable(wifiP2pInfo) }
                     Log.i(runningTag, "已连接p2p设备")
                 } else {
                     Log.i(runningTag, "与p2p设备已断开连接")
                     directActionListener.onDisconnection()
                 }
+                //if (isConnected(context)) {
+                //    wifiP2pManager.requestConnectionInfo(channel) { wifiP2pInfo -> directActionListener.onConnectionInfoAvailable(wifiP2pInfo) }
+                //    Log.i(runningTag, "已连接p2p设备")
+                //} else {
+                //    Log.i(runningTag, "与p2p设备已断开连接")
+                //    directActionListener.onDisconnection()
+                //}
             }
             // indicating that this device details have changed
             WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
@@ -96,15 +98,15 @@ class DirectBroadcastReceiver(
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun isConnected(context: Context) : Boolean {
-        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val network = connectivityManager.activeNetwork
-        return if (network == null) {
-            false
-        } else {
-            val capabilities = connectivityManager.getNetworkCapabilities(network)
-            capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_WIFI_P2P) ?: false
-        }
-    }
+    //@SuppressLint("MissingPermission")
+    //private fun isConnected(context: Context) : Boolean {
+    //    val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    //    val network = connectivityManager.activeNetwork
+    //    return if (network == null) {
+    //        false
+    //    } else {
+    //        val capabilities = connectivityManager.getNetworkCapabilities(network)
+    //        capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_WIFI_P2P) ?: false
+    //    }
+    //}
 }

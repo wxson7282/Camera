@@ -27,7 +27,7 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
     private val serverSocket = ServerSocket(Value.Int.serverSocketPort)
     private val inputJob by lazy { Job() }
     private val acceptJob by lazy { Job() }
-    private val outputJob  by lazy { Job() }
+    private val outputJob by lazy { Job() }
 
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
@@ -44,6 +44,7 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
                     val imageData = imageDataChannel.receive()                  //这是阻塞方法
                     // 发送编码后的imageData数据
                     writeImageData(bufferedSink, imageData)
+                    //Log.i(tag, "writeImageData")
                 }
             }
             Log.i(tag, "outputJob end")
@@ -58,23 +59,17 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
                 try {
                     val clientSocket = serverSocket.accept()   //这是阻塞方法，接收到客户端请求后进入后续处理
                     buildMsg(Msg(Value.Message.ConnectStatus, true))        //向ViewModel发出客户端已连接消息
-                    clientSocket.use {
-                        val bufferedSource: BufferedSource = clientSocket.source().buffer()
-                        val bufferedSink: BufferedSink = clientSocket.sink().buffer()
+                    clientSocket.use { socket ->
+                        val bufferedSource: BufferedSource = socket.source().buffer()
+                        val bufferedSink: BufferedSink = socket.sink().buffer()
                         //启动输出线程
-                        bufferedSink.use {
-                            OutputThread(it).start()
-                        }
+                        OutputThread(bufferedSink).start()
                         //输入协程，读取客户端信息，与serverSocket.accept()在同一线程，
                         // 只有当inputJob中止后才能接收下一次客户端连接请求
-                        withContext(CoroutineScope(inputJob).coroutineContext) {
-                            Log.i(tag, "inputJob start")
-                            bufferedSource.use {
-                                while (isActive) {
-                                    val receivedMsg = readClientMsg(it)
-                                    msgHandle(receivedMsg)
-                                }
-                            }
+                        Log.i(tag, "inputJob start")
+                        while (isActive) {
+                            val receivedMsg = readClientMsg(bufferedSource)
+                            msgHandle(receivedMsg)
                         }
                         Log.i(tag, "inputJob end")
                     }
@@ -100,7 +95,7 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
         }
     }
 
-    private fun readClientMsg(bufferedSource: BufferedSource) : String {
+    private fun readClientMsg(bufferedSource: BufferedSource): String {
         try {
             return bufferedSource.readByteString().toString()           //这是阻塞方法，接收到客户端数据后进入后续处理
         } catch (e: Exception) {

@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
             R.id.menuDirectDiscover -> manageFragments(connectFragment.javaClass.name)
             R.id.menuDisplay -> manageFragments(mainFragment.javaClass.name)
             R.id.menuDirectEnable -> startActivity(Intent(Settings.ACTION_WIFI_SETTINGS))
+            R.id.settings -> startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
     }

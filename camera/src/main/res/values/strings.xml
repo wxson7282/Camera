@@ -13,5 +13,7 @@
 
     <!-- Image Size Preferences -->
     <string name="image_size_title">选择分辨率</string>
+    <string name="codec_format_header">图像编码格式</string>
+    <string name="codec_format_title">选择图像编码格式</string>
 
 </resources>

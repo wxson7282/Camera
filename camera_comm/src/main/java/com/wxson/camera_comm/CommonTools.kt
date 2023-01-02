@@ -3,6 +3,7 @@ package com.wxson.camera_comm
 import okio.Buffer
 import okio.ByteString
 import java.io.*
+import java.nio.ByteBuffer
 import kotlin.experimental.and
 
 
@@ -20,7 +21,7 @@ object CommonTools {
     fun bytesToHex(bytes: ByteArray): String {
         val buf = StringBuilder(bytes.size * 2)
         for (b in bytes) { // 使用String的format方法进行转换
-            buf.append(String.format("%02x", b and 0xff.toByte()))
+            buf.append(String.format("%02x ", b and 0xff.toByte()))
         }
         return buf.toString()
     }
@@ -101,5 +102,19 @@ object CommonTools {
             e.printStackTrace()
         }
         return null
+    }
+
+    fun byteBufferToByteArray(byteBuffer: ByteBuffer) : ByteArray {
+        val byteArray: ByteArray
+        byteBuffer.apply {
+            val limit = limit()
+            val position = position()
+            val size = limit - position
+            byteArray = ByteArray(size)
+            get(byteArray)
+            limit(limit)
+            position(position)
+        }
+        return byteArray
     }
 }

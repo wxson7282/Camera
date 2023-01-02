@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
  * @date 2022/10/22
  * @apiNote
  */
-class MediaCodecCallback(private val mime: String, private val imageSize: Size, private val imageDataChannel: Channel<ImageData>) : MediaCodec.Callback() {
+class MediaCodecCallback(private val mime: String, private val imageSize: Size, private val imageDataChannel: Channel<ImageData>) :
+    MediaCodec.Callback() {
     private val tag = this.javaClass.simpleName
     private lateinit var firstFrameCsd: ByteArray
     var isClientConnected = false
@@ -26,14 +27,13 @@ class MediaCodecCallback(private val mime: String, private val imageSize: Size, 
     }
 
     override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-        Log.i(tag, "onOutputBufferAvailable")
-        if (isClientConnected) {
-            val outputBuffer = codec.getOutputBuffer(index)
-            //var csd: ByteArray?
-            val imageData = ImageData()
-            outputBuffer?.let {
-                //csd only in first frame video data
-                getCsd(it)?.let { csd -> firstFrameCsd = csd }
+        //Log.i(tag, "onOutputBufferAvailable")
+        val outputBuffer = codec.getOutputBuffer(index)
+        outputBuffer?.let {
+            //csd only in first image data
+            getCsd(it)?.let { csd -> firstFrameCsd = csd }
+            if (this::firstFrameCsd.isInitialized && isClientConnected) {
+                val imageData = ImageData()
                 imageData.csd = firstFrameCsd
                 imageData.mime = mime.toByteArray()
                 //imageSize

@@ -5,7 +5,10 @@ import android.media.MediaFormat
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import androidx.preference.PreferenceManager
+import com.wxson.camera_comm.H264Format
 import com.wxson.camera_comm.H265Format
+import com.wxson.controller.MyApplication
 
 /**
  * @author wxson
@@ -25,7 +28,13 @@ class Decoder private constructor(mediaCodecCallback: MediaCodecCallback) {
 
     fun configure(imageSize: Size, csd: ByteArray, surface: Surface) {
         //set up input mediaFormat
-        val codecFormat = H265Format.getDecodeFormat(imageSize, csd)
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MyApplication.context)
+        val videoCodecMime = sharedPreferences.getString("format_list", MediaFormat.MIMETYPE_VIDEO_AVC)
+        val codecFormat =
+            if (videoCodecMime == MediaFormat.MIMETYPE_VIDEO_HEVC)
+                H265Format.getDecodeFormat(imageSize, csd)
+            else
+                H264Format.getDecodeFormat(imageSize, csd)
         // configure mediaCodec
         mediaCodec.configure(codecFormat, surface, null, 0)
     }
@@ -42,7 +51,8 @@ class Decoder private constructor(mediaCodecCallback: MediaCodecCallback) {
     }
 
     companion object {
-        @Volatile private var instance: Decoder? = null
+        @Volatile
+        private var instance: Decoder? = null
         fun getInstance(mediaCodecCallback: MediaCodecCallback) =
             instance ?: synchronized(this) {
                 instance ?: Decoder(mediaCodecCallback).also { instance = it }

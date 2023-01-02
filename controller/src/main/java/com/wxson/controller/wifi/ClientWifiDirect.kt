@@ -31,13 +31,6 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
     private var wifiP2pEnabled = false
     private var remoteDevice: WifiP2pDevice? = null
 
-    ////region attributes
-    //private val wifiP2pDeviceList = ArrayList<WifiP2pDevice>()
-    //fun getWifiP2pDeviceList(): ArrayList<WifiP2pDevice> {
-    //    return this.wifiP2pDeviceList
-    //}
-    ////endregion
-
     //region communication
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
@@ -51,25 +44,29 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
         wifiP2pManager = MyApplication.context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
         channel = wifiP2pManager.initialize(MyApplication.context, Looper.getMainLooper(), this)
         wifiP2pManager.setDeviceName(channel, MyApplication.context.getString(R.string.app_name))
+        wifiP2pDeviceList.clear()
         receiver = DirectBroadcastReceiver(wifiP2pManager, channel, this)
         MyApplication.context.registerReceiver(receiver, DirectBroadcastReceiver.getIntentFilter())
-        wifiP2pDeviceList.clear()
-
+        startDiscoverPeers()
     }
 
     val deviceAdapterItemClickListener = object : DeviceAdapter.OnClickListener {
         override fun onItemClick(position: Int) {
             remoteDevice = wifiP2pDeviceList[position]
-            buildMsg(Msg(Value.Message.MsgShow, remoteDevice!!.deviceName + "将要连接"))
-            connect()
+            remoteDevice?.let {
+                buildMsg(Msg(Value.Message.MsgShow, it.deviceName + "将要连接"))
+                connect()
+            }
         }
     }
 
     @SuppressLint("MissingPermission")
-    fun startDiscoverPeers() {
+    private fun startDiscoverPeers() {
+        Log.i(tag, "startDiscoverPeers")
         if (!wifiP2pEnabled) {
+            Log.i(tag, "WLAN直连未打开")
             // 通知调用者打开wifi
-            buildMsg(Msg(Value.Message.WLANIsOff, null))
+            buildMsg(Msg(Value.Message.MsgShow, "请打开WLAN直连"))
             return
         }
         // 通知调用者在ui上显示 正在搜索附近设备
@@ -78,10 +75,12 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
         //搜寻附近带有 Wi-Fi P2P 的设备
         wifiP2pManager.discoverPeers(channel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
+                Log.i(tag, "discoverPeers success")
                 buildMsg(Msg(Value.Message.MsgShow, "discoverPeers success"))
             }
 
             override fun onFailure(reasonCode: Int) {
+                Log.i(tag, "discoverPeers failure. reasonCode=$reasonCode")
                 buildMsg(Msg(Value.Message.DismissSnack, null))
                 buildMsg(Msg(Value.Message.MsgShow, "discoverPeers failure. reasonCode=$reasonCode"))
             }
@@ -94,6 +93,8 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
 
     override fun onChannelDisconnected() {
         Log.i(tag, "onChannelDisconnected")
+        buildMsg(Msg(Value.Message.MsgShow, "已断开Channel"))
+        setConnectStatus(false)
     }
 
     override fun onWifiP2pEnabled(enabled: Boolean) {
@@ -111,6 +112,8 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
         if (remoteDevice != null) {
             buildMsg(Msg(Value.Message.ShowRemoteDeviceInfo, remoteDevice))
         }
+        //显示连接状态
+        setConnectStatus(true)
         //判断本机为非群主，且群已经建立
         if (wifiP2pInfo.groupFormed && !wifiP2pInfo.isGroupOwner) {
             //通知调用者启动连接线程
@@ -128,7 +131,7 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
         clearWifiP2pDeviceList()
         //通知调用者清除各种wifi连接信息
         buildMsg(Msg(Value.Message.ShowWifiP2pInfo, null))
-        buildMsg(Msg(Value.Message.ConnectStatus, false))
+        setConnectStatus(false)
         buildMsg(Msg(Value.Message.ShowRemoteDeviceInfo, null))
     }
 
@@ -166,19 +169,17 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
 
         wifiP2pManager.connect(channel, config, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
-                //sendMsgLiveData(ViewModelMsg(MsgType.SHOW_CONNECT_STATUS.ordinal, true))
-                buildMsg(Msg(Value.Message.ConnectStatus, true))
+                //setConnectStatus(true)
                 Log.i(tag, "connect onSuccess")
             }
 
             override fun onFailure(reason: Int) {
-                buildMsg(Msg(Value.Message.ConnectStatus, false))
+                setConnectStatus(false)
                 Log.e(tag, "连接失败 ${getGetConnectFailureReason(reason)}")
                 buildMsg(Msg(Value.Message.DismissSnack, null))
             }
         })
     }
-
 
     private fun unregisterBroadcastReceiver() {
         MyApplication.context.unregisterReceiver(receiver)
@@ -201,4 +202,7 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
         }
     }
 
+    private fun setConnectStatus(isConnected: Boolean) {
+        buildMsg(Msg(Value.Message.ConnectStatus, isConnected))
+    }
 }

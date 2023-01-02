@@ -27,9 +27,9 @@ class MainViewModel: ViewModel() {
     private val serverRunnable: ServerRunnable
     private val serverThread: Thread
     private val serverWifiDirect: ServerWifiDirect
-    // coroutineChannel 的buffer内只保留最新数据
+    // imageDataChannel 的buffer内只保留最新数据
     // Drop the oldest value in the buffer on overflow, add the new value to the buffer, do not suspend.
-    private val coroutineChannel = Channel<ImageData>(Channel.CONFLATED)
+    private val imageDataChannel = Channel<ImageData>(Channel.CONFLATED)
 
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
@@ -40,13 +40,13 @@ class MainViewModel: ViewModel() {
     init {
         Log.i(tag, "init")
 
-        camera = Camera(coroutineChannel)
+        camera = Camera(imageDataChannel)
         viewModelScope.launch {
             camera.msgStateFlow.collect {
                 buildMsg(it)        // 转发来自camera的Msg
             }
         }
-        serverRunnable = ServerRunnable(coroutineChannel)
+        serverRunnable = ServerRunnable(imageDataChannel)
         serverThread = Thread(serverRunnable)
         serverWifiDirect = ServerWifiDirect()
         viewModelScope.launch {
@@ -74,7 +74,7 @@ class MainViewModel: ViewModel() {
         serverRunnable.stopService()
         camera.release()
         serverWifiDirect.release()
-        coroutineChannel.close()
+        imageDataChannel.close()
     }
 
     fun setDisplayRotation(rotation: Int?) {

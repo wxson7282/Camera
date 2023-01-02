@@ -81,7 +81,7 @@ class ConnectFragment : Fragment() {
     }
 
     private fun dismissSnack() {
-        snackbar.dismiss()
+        if (this::snackbar.isInitialized) snackbar.dismiss()
     }
 
     private fun showSelfDeviceInfo(device: WifiP2pDevice?) {

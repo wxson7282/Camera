@@ -15,7 +15,7 @@ class BitBufferLite(private var buffer: ByteBuffer) {
         return getBits(1) != 0
     }
 
-    private fun getBits(nBits: Int): Int {
+    fun getBits(nBits: Int): Int {
         require(!(nBits < 0 || nBits > 32))
         if (nBits == 0) {
             return 0
@@ -23,7 +23,7 @@ class BitBufferLite(private var buffer: ByteBuffer) {
         var bits = restBits.toLong()
         var collected = availableBits
         while (collected < nBits) {
-            bits = bits shl 8 or (buffer.get().toLong() and 0xFF)
+            bits = (bits shl 8) or (buffer.get().toLong() and 0xFF)
             collected += 8
         }
         availableBits = collected - nBits

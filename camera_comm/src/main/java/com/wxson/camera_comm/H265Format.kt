@@ -17,7 +17,7 @@ object H265Format {
         val width = imageSize.width
         val height = imageSize.height
         val frameRate = 30
-        val frameInterval = 0
+        val frameInterval = 0   //每一帧都是关键帧
         val bitRateFactor = 10
         val encodeFormat = MediaFormat.createVideoFormat(mime, width, height)
         encodeFormat.apply {

@@ -17,4 +17,15 @@
         <item>1280*960</item>
         <item>1440*1080</item>
     </string-array>
+
+    <!-- Codec Format Preference -->
+    <string-array name="codec_format_entries">
+        <item>H264</item>
+        <item>H265</item>
+    </string-array>
+    <string-array name="codec_format_values">
+        <item>video/avc</item>
+        <item>video/hevc</item>
+    </string-array>
+
 </resources>
