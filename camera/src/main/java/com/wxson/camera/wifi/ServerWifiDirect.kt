@@ -50,7 +50,7 @@ class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
         removeGroup()
     }
 
-    private fun createGroup() {
+    fun createGroup() {
         Log.i(tag, "createGroup()")
         if (ActivityCompat.checkSelfPermission(MyApplication.context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.i(tag, "需要申请ACCESS_FINE_LOCATION权限")
@@ -71,7 +71,7 @@ class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
         })
     }
 
-    private fun removeGroup() {
+    fun removeGroup() {
         Log.i(tag, "removeGroup()")
         wifiP2pManager.removeGroup(channel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {

@@ -97,4 +97,12 @@ class MainViewModel: ViewModel() {
         camera.handleZoom(isZoomIn)
     }
 
+    fun createGroup() {
+        serverWifiDirect.createGroup()
+    }
+
+    fun removeGroup() {
+        serverWifiDirect.removeGroup()
+    }
+
 }

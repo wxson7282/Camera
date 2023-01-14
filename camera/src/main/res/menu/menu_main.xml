@@ -4,6 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.wxson.camera.MainActivity">
     <item
+        android:id="@+id/createGroup"
+        android:enabled="false"
+        android:title="@string/create_group"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/removeGroup"
+        android:enabled="false"
+        android:title="@string/remove_group"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/settings"
         android:icon="@drawable/ic_baseline_settings_24"
         android:title="@string/setting"

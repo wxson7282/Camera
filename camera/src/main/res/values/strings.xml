@@ -15,5 +15,7 @@
     <string name="image_size_title">选择分辨率</string>
     <string name="codec_format_header">图像编码格式</string>
     <string name="codec_format_title">选择图像编码格式</string>
+    <string name="create_group">建组</string>
+    <string name="remove_group">删组</string>
 
 </resources>

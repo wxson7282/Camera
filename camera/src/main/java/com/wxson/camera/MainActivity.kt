@@ -23,13 +23,16 @@ class MainActivity : AppCompatActivity() {
 
     private val tag = this.javaClass.simpleName
     private lateinit var viewModel: MainViewModel
-    private lateinit var activityMainBinding: ActivityMainBinding
+    private lateinit var binding: ActivityMainBinding
+    private lateinit var menu: Menu
+    private lateinit var menuItemCreateGroup: MenuItem
+    private lateinit var menuItemRemoveGroup: MenuItem
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        activityMainBinding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(activityMainBinding.root)
-        setSupportActionBar(activityMainBinding.toolbar)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
 
         @Suppress("DEPRECATION")
         window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
@@ -47,7 +50,7 @@ class MainActivity : AppCompatActivity() {
             else
                 this.windowManager.defaultDisplay.rotation
 
-        with(activityMainBinding) {
+        with(binding) {
             textureView.surfaceTextureListener = viewModel.getSurfaceTextureListener()
             viewModel.setDisplayRotation(mainActivityDisplayRotation)
             btnTakePic.setOnClickListener {
@@ -69,7 +72,23 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.msgStateFlow.collect {
                 when (it.type) {
-                    "msgStateFlow" -> showMsg(it.obj as String)
+                    "msgStateFlow" -> {
+                        when (val msg = it.obj as String) {
+                            "group is formed" -> {
+                                if (this@MainActivity::menu.isInitialized) {
+                                    menuItemCreateGroup.isEnabled = false
+                                    menuItemRemoveGroup.isEnabled = true
+                                }
+                            }
+                            "group is not formed" -> {
+                                if (this@MainActivity::menu.isInitialized) {
+                                    menuItemCreateGroup.isEnabled = true
+                                    menuItemRemoveGroup.isEnabled = false
+                                }
+                            }
+                            else -> showMsg(msg)
+                        }
+                    }
                     "setPreviewSize" -> setPreviewSize(it.obj as Size)
                     Value.Message.ConnectStatus -> setConnectStatus(it.obj as Boolean)
                 }
@@ -79,6 +98,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main, menu)
+        this.menu = menu
+        menuItemCreateGroup = this.menu.findItem(R.id.createGroup)
+        menuItemRemoveGroup = this.menu.findItem(R.id.removeGroup)
         return true
     }
 
@@ -88,6 +110,8 @@ class MainActivity : AppCompatActivity() {
             R.id.settings -> {
                 startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
             }
+            R.id.createGroup -> viewModel.createGroup()
+            R.id.removeGroup -> viewModel.removeGroup()
         }
         return true
     }
@@ -97,11 +121,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setPreviewSize(size: Size) {
-        activityMainBinding.textureView.setAspectRation(size.width, size.height)
+        binding.textureView.setAspectRation(size.width, size.height)
     }
 
     private fun setConnectStatus(connected: Boolean) {
-        activityMainBinding.imageConnected.setImageDrawable(AppCompatResources.getDrawable(
+        binding.imageConnected.setImageDrawable(AppCompatResources.getDrawable(
             this@MainActivity, if (connected) R.drawable.ic_connected else R.drawable.ic_disconnected))
     }
 
