@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import okio.*
 import java.io.IOException
+import java.io.ObjectOutputStream
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
@@ -53,6 +54,7 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
                     if (outputJob.await() || inputJob.await()) {
                         outputJob.cancel()
                         inputJob.cancel()
+                        buildMsg(Msg(Value.Message.ConnectStatus, false))        //向ViewModel发出客户端连接中断消息
                     }
                 }
             }
@@ -69,18 +71,19 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
         }
     }
 
-    private suspend fun outputJobAsync(coroutineScope: CoroutineScope, bufferedSink: BufferedSink) : Deferred<Boolean> {
+    private fun outputJobAsync(coroutineScope: CoroutineScope, bufferedSink: BufferedSink) : Deferred<Boolean> {
         return coroutineScope.async(Dispatchers.IO) {
             Log.i(tag, "outputJob start")
             try {
+                val objectOutputStream = ObjectOutputStream(bufferedSink.outputStream())
                 while (isActive) {
                     // 接收来自MediaCodecCallback编码后的imageData数据
                     val imageData = imageDataChannel.receive()                  //这是阻塞方法
-                    // 发送序列化后的imageData数据
-                    CommonTools.objectToByteString(imageData)?.let {
-                        bufferedSink.write(it)      //这是阻塞方法
-                        //Log.i(tag, "imageData wrote")
-                    }
+                    // 发送imageData数据
+                    objectOutputStream.writeObject(imageData)
+                    objectOutputStream.reset()
+                    bufferedSink.flush()
+                    //Log.i(tag, "imageData wrote")
                 }
             } catch (socketException: SocketException) {
                 Log.e(tag, "writeImageData SocketException")
@@ -97,7 +100,7 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
             Log.i(tag, "inputJob start")
             try {
                 while (isActive) {
-                    val receivedMsg = bufferedSource.readByteString().toString() //这是阻塞方法，接收到客户端数据后进入后续处理
+                    val receivedMsg = bufferedSource.readByteArray().toString() //这是阻塞方法，接收到客户端数据后进入后续处理
                     msgHandle(receivedMsg)
                 }
             }  catch (socketException: SocketException) {

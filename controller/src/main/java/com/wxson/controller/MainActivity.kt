@@ -11,11 +11,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.permissionx.guolindev.PermissionX
+import com.wxson.camera_comm.Value
 import com.wxson.controller.databinding.ActivityMainBinding
 import com.wxson.controller.ui.main.ConnectFragment
 import com.wxson.controller.ui.main.MainFragment
 import com.wxson.controller.ui.main.SharedViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     private val tag = this.javaClass.simpleName
@@ -41,15 +44,25 @@ class MainActivity : AppCompatActivity() {
             with(transaction) {
                 //replace(R.id.container, mainFragment).commitNow()
                 //把全体Fragment加入到FragmentManager
-                add(R.id.frameLayout, connectFragment, connectFragment.javaClass.name).show(connectFragment)
-                add(R.id.frameLayout, mainFragment, mainFragment.javaClass.name).hide(mainFragment)
+                add(R.id.frameLayout, connectFragment, connectFragment.javaClass.name).hide(connectFragment)
+                add(R.id.frameLayout, mainFragment, mainFragment.javaClass.name).show(mainFragment)
                 commit()
-                currentFragment = connectFragment
+                currentFragment = mainFragment
             }
         }
 
         viewModel.isConnectedLiveData.observe(this) {
             binding.imageConnected.setImageResource(if (it) R.drawable.ic_connected else R.drawable.ic_disconnected)
+        }
+
+        lifecycleScope.launch {
+            viewModel.msgStateFlow.collect {
+                when (it.type) {
+                    Value.Message.ShowMainFragment -> {
+                        manageFragments(mainFragment.javaClass.name)
+                    }
+                }
+            }
         }
     }
 

@@ -23,14 +23,14 @@ object AvcUtil {
     //private const val NAL_TYPE_SUBSET_SPS = 0x0f
 
     fun goToPrefix(buffer: ByteBuffer): Boolean {
-        var presudoPrefix = 0xffffffff
-        while (buffer.hasRemaining()) { // 在buffer内寻找NAL_TYPE_SPS 0x07
-            presudoPrefix = (presudoPrefix shl 8) or (buffer.get().toLong() and 0xff)
-            if (presudoPrefix == START_PREFIX_CODE.toLong()) {
-                return true     // 找到NAL_TYPE_SPS
+        var presudoPrefix = 0x0fffffff
+        while (buffer.hasRemaining()) { // 在buffer内寻找START_PREFIX_CODE(起始码)
+            presudoPrefix = (presudoPrefix shl 8) or (buffer.get().toInt() and 0xff)
+            if (presudoPrefix == START_PREFIX_CODE) {
+                return true     // 找到START_PREFIX_CODE
             }
         }
-        return false            // 未找到NAL_TYPE_SPS
+        return false            // 未找到START_PREFIX_CODE
     }
 
     //private fun getNalType(buffer: ByteBuffer): Int {
@@ -93,7 +93,7 @@ object AvcUtil {
 
 
     fun getSps(buffer: ByteBuffer): ByteArray {
-        buffer.clear()
+        buffer.clear()  //重置byteBuffer各标志，并非清除内容。
         var i = 5
         while (i < buffer.capacity()) {
             if (buffer[i].toInt() and 0xff == 0) {    //sps head以后遇到0结束

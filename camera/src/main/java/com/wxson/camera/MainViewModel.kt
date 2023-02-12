@@ -56,6 +56,9 @@ class MainViewModel: ViewModel() {
                         camera.mediaCodecCallback.isClientConnected = it.obj as Boolean
                         buildMsg(it)        //转发到MainActivity
                     }
+                    else -> {
+                        buildMsg(it)
+                    }
                 }
             }
         }
@@ -64,6 +67,7 @@ class MainViewModel: ViewModel() {
                 buildMsg(it)        // 转发来自wifiDirect的Msg
             }
         }
+
         // 启动通信服务进程
         serverThread.start()
     }

@@ -76,7 +76,7 @@ class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
         wifiP2pManager.removeGroup(channel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 Log.i(tag, "removeGroup onSuccess")
-                channel.close()
+                //channel.close()
                 clearClientList()
                 // notify MediaCodecCallback of connect status
                 buildMsg(Msg(Value.Message.MsgShow, "group is not formed"))

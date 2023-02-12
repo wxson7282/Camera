@@ -46,6 +46,7 @@ object H264Format {
         //}
         csdByteBuffer.clear()
         if (!goToPrefix(csdByteBuffer)) {
+            // 未找到 Prefix 0x01
             Log.e(tag, "getDecodeFormat Prefix error")
             return null
         }

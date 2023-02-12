@@ -1,6 +1,5 @@
 package com.wxson.controller.ui.main
 
-import android.graphics.SurfaceTexture
 import android.net.wifi.p2p.WifiP2pDevice
 import android.util.Log
 import android.util.Size
@@ -15,6 +14,7 @@ import com.wxson.camera_comm.Value
 import com.wxson.controller.codec.Decoder
 import com.wxson.controller.codec.MediaCodecCallback
 import com.wxson.controller.connect.ClientRunnable
+import com.wxson.controller.connect.IFirstImageDataListener
 import com.wxson.controller.wifi.ClientWifiDirect
 import com.wxson.controller.wifi.DeviceAdapter
 import kotlinx.coroutines.channels.Channel
@@ -31,6 +31,7 @@ class SharedViewModel : ViewModel() {
     private val decoder: Decoder
     private val imageDataChannel = Channel<ImageData>(Channel.CONFLATED)
     private val msgChannel = Channel<String>(Channel.BUFFERED)
+    lateinit var surface: Surface
 
     //region attributes
     private val deviceAdapter: DeviceAdapter
@@ -38,10 +39,11 @@ class SharedViewModel : ViewModel() {
         return this.deviceAdapter
     }
 
-    private var surfaceTexture: SurfaceTexture? = null
-    fun setSurfaceTexture(surfaceTexture: SurfaceTexture?) {
-        this.surfaceTexture = surfaceTexture
-    }
+    //private var surfaceTexture: SurfaceTexture? = null
+    //fun setSurfaceTexture(surfaceTexture: SurfaceTexture?) {
+    //    this.surfaceTexture = surfaceTexture
+    //}
+
     //endregion
 
     //region communication
@@ -56,6 +58,10 @@ class SharedViewModel : ViewModel() {
     }
     //endregion
 
+    companion object {
+        lateinit var firstImageDataListener: IFirstImageDataListener
+    }
+
     init {
         Log.i(tag, "init")
         wifiP2pDeviceList.clear()
@@ -63,6 +69,7 @@ class SharedViewModel : ViewModel() {
         clientWifiDirect = ClientWifiDirect(deviceAdapter, wifiP2pDeviceList)
         deviceAdapter.setClickListener(clientWifiDirect.deviceAdapterItemClickListener)
         decoder = Decoder.getInstance(MediaCodecCallback(imageDataChannel))
+        clientWifiDirect.startDiscoverPeers()
 
         viewModelScope.launch {
             clientWifiDirect.msgStateFlow.collect {
@@ -85,16 +92,24 @@ class SharedViewModel : ViewModel() {
             clientRunnable.msgStateFlow.collect {
                 when (it.type) {
                     Value.Message.ConfigAndStartDecoder -> {        //收到第一帧图像时，先要配置解码器
-                        if (surfaceTexture != null) {
-                            val imageData = it.obj as ImageData
-                            decoder.configure(                                      //配置解码器
-                                Size(imageData.width, imageData.height),
-                                imageData.csd,
-                                Surface(surfaceTexture)
-                            )
-                            decoder.start()                                         //启动解码器
-                        }
+                        // request to show MainFragment
+                        buildMsg(Msg(Value.Message.ShowMainFragment, null))
+                        //*******************************************************
+                        //if (this@SharedViewModel::surface.isInitialized) {
+                        //    val imageData = it.obj as ImageData
+                        //    decoder.configure(                                       //配置解码器
+                        //        String(imageData.mime),
+                        //        Size(imageData.width, imageData.height),
+                        //        imageData.csd,
+                        //        surface
+                        //    )
+                        //    decoder.start()                                         //启动解码器
+                        //    Log.i(tag, "decoder start")
+                        //}
+                        firstImageDataListener.onFirstImageDataArrived(it.obj as ImageData, imageDataChannel)
                     }
+                    Value.Message.Blank -> Log.i(tag, "blank msg from ClientRunnable")
+                    else -> buildMsg(it)
                 }
             }
         }

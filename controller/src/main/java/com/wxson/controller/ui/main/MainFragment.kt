@@ -1,14 +1,12 @@
 package com.wxson.controller.ui.main
 
-import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.wxson.controller.R
-import com.wxson.controller.databinding.FragmentConnectBinding
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.wxson.controller.databinding.FragmentMainBinding
 
 class MainFragment : Fragment() {
@@ -33,9 +31,18 @@ class MainFragment : Fragment() {
         Log.i(tag, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
-        binding?.let {
-            viewModel.setSurfaceTexture(it.textureView.surfaceTexture)
-        }
+        //binding?.let {
+        //    it.textureView.surfaceTextureListener = viewModel.getSurfaceTextureListener()
+        //    it.textureView.rotation = 90f
+        //}
+
+        //lifecycleScope.launch {
+        //    binding?.textureView?.msgStateFlow?.collect {
+        //        when (it.type) {
+        //            Value.Message.SurfaceTextureAvailable -> viewModel.surface = it.obj as Surface
+        //        }
+        //    }
+        //}
     }
 
     override fun onDestroyView() {

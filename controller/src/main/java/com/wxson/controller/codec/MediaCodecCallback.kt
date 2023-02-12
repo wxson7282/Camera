@@ -19,6 +19,7 @@ class MediaCodecCallback(private val imageDataChannel: Channel<ImageData>) : Med
     private val tag = this.javaClass.simpleName
 
     override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+        //Log.i(tag, "onInputBufferAvailable")
         CoroutineScope(Job()).launch {
             try {
                 val inputBuffer: ByteBuffer? = codec.getInputBuffer(index)
@@ -30,6 +31,7 @@ class MediaCodecCallback(private val imageDataChannel: Channel<ImageData>) : Med
                     it.put(imageData.byteArray, 0, length)
                     //把inputBuffer放回队列
                     codec.queueInputBuffer(index, 0, length, timeStamp, 0)
+                    //Log.i(tag, "onInputBufferAvailable")
                 }
             } catch (e: IndexOutOfBoundsException) {
                 Log.e(tag, "inputBuffer数据越界 IndexOutOfBoundsException");
@@ -41,11 +43,12 @@ class MediaCodecCallback(private val imageDataChannel: Channel<ImageData>) : Med
     }
 
     override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-        codec.releaseOutputBuffer(index, false) //release the buffer back to the codec
+        //Log.i(tag, "onOutputBufferAvailable")
+        codec.releaseOutputBuffer(index, true) //release the buffer back to the codec
     }
 
     override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
-        Log.i(tag, "onError")
+        Log.e(tag, "onError")
         codec.reset()
     }
 

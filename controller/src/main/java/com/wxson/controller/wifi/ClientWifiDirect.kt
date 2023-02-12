@@ -47,7 +47,7 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
         wifiP2pDeviceList.clear()
         receiver = DirectBroadcastReceiver(wifiP2pManager, channel, this)
         MyApplication.context.registerReceiver(receiver, DirectBroadcastReceiver.getIntentFilter())
-        startDiscoverPeers()
+        //startDiscoverPeers()
     }
 
     val deviceAdapterItemClickListener = object : DeviceAdapter.OnClickListener {
@@ -61,8 +61,9 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
     }
 
     @SuppressLint("MissingPermission")
-    private fun startDiscoverPeers() {
+    fun startDiscoverPeers() {
         Log.i(tag, "startDiscoverPeers")
+        //
         if (!wifiP2pEnabled) {
             Log.i(tag, "WLAN直连未打开")
             // 通知调用者打开wifi
