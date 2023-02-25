@@ -3,7 +3,7 @@ package com.wxson.controller.ui.main
 import android.net.wifi.p2p.WifiP2pDevice
 import android.util.Log
 import android.util.Size
-import android.view.Surface
+import android.view.TextureView
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,7 +14,6 @@ import com.wxson.camera_comm.Value
 import com.wxson.controller.codec.Decoder
 import com.wxson.controller.codec.MediaCodecCallback
 import com.wxson.controller.connect.ClientRunnable
-import com.wxson.controller.connect.IFirstImageDataListener
 import com.wxson.controller.wifi.ClientWifiDirect
 import com.wxson.controller.wifi.DeviceAdapter
 import kotlinx.coroutines.channels.Channel
@@ -31,7 +30,6 @@ class SharedViewModel : ViewModel() {
     private val decoder: Decoder
     private val imageDataChannel = Channel<ImageData>(Channel.CONFLATED)
     private val msgChannel = Channel<String>(Channel.BUFFERED)
-    lateinit var surface: Surface
 
     //region attributes
     private val deviceAdapter: DeviceAdapter
@@ -39,10 +37,9 @@ class SharedViewModel : ViewModel() {
         return this.deviceAdapter
     }
 
-    //private var surfaceTexture: SurfaceTexture? = null
-    //fun setSurfaceTexture(surfaceTexture: SurfaceTexture?) {
-    //    this.surfaceTexture = surfaceTexture
-    //}
+    fun getSurfaceTextureListener() : TextureView.SurfaceTextureListener {
+        return decoder.getSurfaceTextureListener()
+    }
 
     //endregion
 
@@ -57,10 +54,6 @@ class SharedViewModel : ViewModel() {
         _msg.value = msg
     }
     //endregion
-
-    companion object {
-        lateinit var firstImageDataListener: IFirstImageDataListener
-    }
 
     init {
         Log.i(tag, "init")
@@ -94,19 +87,15 @@ class SharedViewModel : ViewModel() {
                     Value.Message.ConfigAndStartDecoder -> {        //收到第一帧图像时，先要配置解码器
                         // request to show MainFragment
                         buildMsg(Msg(Value.Message.ShowMainFragment, null))
-                        //*******************************************************
-                        //if (this@SharedViewModel::surface.isInitialized) {
-                        //    val imageData = it.obj as ImageData
-                        //    decoder.configure(                                       //配置解码器
-                        //        String(imageData.mime),
-                        //        Size(imageData.width, imageData.height),
-                        //        imageData.csd,
-                        //        surface
-                        //    )
-                        //    decoder.start()                                         //启动解码器
-                        //    Log.i(tag, "decoder start")
-                        //}
-                        firstImageDataListener.onFirstImageDataArrived(it.obj as ImageData, imageDataChannel)
+                        // config decoder
+                        val imageData = it.obj as ImageData
+                        decoder.configure(                                       //配置解码器
+                            String(imageData.mime),
+                            Size(imageData.width, imageData.height),
+                            imageData.csd
+                        )
+                        decoder.start()                                         //启动解码器
+                        Log.i(tag, "decoder start")
                     }
                     Value.Message.Blank -> Log.i(tag, "blank msg from ClientRunnable")
                     else -> buildMsg(it)

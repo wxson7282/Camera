@@ -31,18 +31,11 @@ class MainFragment : Fragment() {
         Log.i(tag, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
-        //binding?.let {
-        //    it.textureView.surfaceTextureListener = viewModel.getSurfaceTextureListener()
-        //    it.textureView.rotation = 90f
-        //}
-
-        //lifecycleScope.launch {
-        //    binding?.textureView?.msgStateFlow?.collect {
-        //        when (it.type) {
-        //            Value.Message.SurfaceTextureAvailable -> viewModel.surface = it.obj as Surface
-        //        }
-        //    }
-        //}
+        binding?.let {
+            it.textureView.rotation = 270f
+            it.textureView.rotationY = 180f
+            it.textureView.surfaceTextureListener = viewModel.getSurfaceTextureListener()
+        }
     }
 
     override fun onDestroyView() {

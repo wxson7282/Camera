@@ -26,6 +26,7 @@ class ControllerTextureView(mContext: Context, attrs: AttributeSet) : TextureVie
     init {
         this.surfaceTextureListener = this
         this.rotation = 270f
+        this.rotationY = 180f
     }
 
     override fun onSurfaceTextureAvailable(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
@@ -54,14 +55,14 @@ class ControllerTextureView(mContext: Context, attrs: AttributeSet) : TextureVie
     private fun registerFirstImageDataListener() {
         val firstImageDataListener = object : IFirstImageDataListener {
             override fun onFirstImageDataArrived(imageData: ImageData, imageDataChannel: Channel<ImageData>) {
-                //prepare decoder
-                val surface = Surface(super@ControllerTextureView.getSurfaceTexture())
-                mediaCodec = Decoder.prepareDecoder(surface, imageData, imageDataChannel)
-                //start decoder
-                mediaCodec?.start()
+                ////prepare decoder
+                //val surface = Surface(super@ControllerTextureView.getSurfaceTexture())
+                //mediaCodec = Decoder.prepareDecoder(surface, imageData, imageDataChannel)
+                ////start decoder
+                //mediaCodec?.start()
             }
         }
         //listener injected into SharedViewModel
-        SharedViewModel.firstImageDataListener = firstImageDataListener
+        //SharedViewModel.firstImageDataListener = firstImageDataListener
     }
 }
