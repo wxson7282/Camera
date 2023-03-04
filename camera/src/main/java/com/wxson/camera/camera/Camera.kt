@@ -177,6 +177,8 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
             CameraCharacteristics.LENS_FACING_BACK
         else
             CameraCharacteristics.LENS_FACING_FRONT
+        //if (this::mediaCodecCallback.isInitialized)
+        //    mediaCodecCallback.setLensFacing(cameraFacing)
 
         previewSize = Size(PREVIEW_WIDTH, PREVIEW_HEIGHT) //重置预览大小
         releaseCamera()
@@ -284,7 +286,10 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
         videoCodecSizeString?.let {
             val (width, height) = it.split("*")
             val imageSize =Size(width.toInt(), height.toInt())
-            mediaCodecCallback = MediaCodecCallback(videoCodecMime?:MediaFormat.MIMETYPE_VIDEO_AVC, imageSize, imageDataChannel)
+            mediaCodecCallback = MediaCodecCallback(
+                videoCodecMime?:MediaFormat.MIMETYPE_VIDEO_AVC,
+                imageSize, cameraFacing,
+                imageDataChannel)
         }
 
         openCamera()

@@ -1,5 +1,6 @@
 package com.wxson.controller.ui.main
 
+import android.hardware.camera2.CameraCharacteristics
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,7 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import com.wxson.camera_comm.Value
 import com.wxson.controller.databinding.FragmentMainBinding
+import kotlinx.coroutines.launch
 
 class MainFragment : Fragment() {
 
@@ -31,10 +35,24 @@ class MainFragment : Fragment() {
         Log.i(tag, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
-        binding?.let {
-            it.textureView.rotation = 270f
-            it.textureView.rotationY = 180f
-            it.textureView.surfaceTextureListener = viewModel.getSurfaceTextureListener()
+        binding?.textureView?.surfaceTextureListener = viewModel.getSurfaceTextureListener()
+
+        lifecycleScope.launch {
+            viewModel.msgStateFlow.collect {
+                when (it.type) {
+                    Value.Message.LensFacingChanged -> {
+                        when (it.obj as Int) {      // it.obj as lens facing
+                            CameraCharacteristics.LENS_FACING_BACK -> {
+                                binding?.textureView?.rotation = 90f
+                            }
+                            CameraCharacteristics.LENS_FACING_FRONT -> {
+                                binding?.textureView?.rotation = 270f
+                                binding?.textureView?.rotationY = 180f
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

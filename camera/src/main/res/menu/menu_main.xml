@@ -5,7 +5,7 @@
     tools:context="com.wxson.camera.MainActivity">
     <item
         android:id="@+id/createGroup"
-        android:enabled="false"
+        android:enabled="true"
         android:title="@string/create_group"
         app:showAsAction="always" />
     <item

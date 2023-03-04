@@ -72,7 +72,7 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             viewModel.msgStateFlow.collect {
                 when (it.type) {
-                    "msgStateFlow" -> {
+                    Value.Message.MsgShow -> {
                         when (val msg = it.obj as String) {
                             "group is formed" -> {
                                 if (this@MainActivity::menu.isInitialized) {

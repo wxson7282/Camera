@@ -89,6 +89,8 @@ class SharedViewModel : ViewModel() {
                         buildMsg(Msg(Value.Message.ShowMainFragment, null))
                         // config decoder
                         val imageData = it.obj as ImageData
+                        // 通知textureView根据camera镜头方向改变rotation
+                        buildMsg(Msg(Value.Message.LensFacingChanged, imageData.lensFacing))
                         decoder.configure(                                       //配置解码器
                             String(imageData.mime),
                             Size(imageData.width, imageData.height),

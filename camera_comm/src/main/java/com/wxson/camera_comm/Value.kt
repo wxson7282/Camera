@@ -25,6 +25,6 @@ object Value {
         const val DismissSnack = "dismiss snack bar"
         const val ConfigAndStartDecoder = "config and start decoder"
         const val ShowMainFragment = "show MainFragment"
-        const val SurfaceTextureAvailable = "SurfaceTexture Available"
+        const val LensFacingChanged = "lens facing changed"
     }
 }

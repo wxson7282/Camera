@@ -27,6 +27,8 @@ class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
     private val channel: WifiP2pManager.Channel
     private val receiver: BroadcastReceiver
     private val clientList = ArrayList<String>()
+    private val groupIsFormed = "group is formed"
+    private val groupIsNotFormed = "group is not formed"
 
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
@@ -38,11 +40,13 @@ class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
         Log.i(tag, "init")
         wifiP2pManager =  MyApplication.context.getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager
         channel = wifiP2pManager.initialize(MyApplication.context, Looper.getMainLooper(), this)
-        createGroup()
+        //createGroup()
         wifiP2pManager.setDeviceName(channel, MyApplication.context.getString(R.string.app_name))
-        clientList.clear()
+        //clientList.clear()
         receiver = DirectBroadcastReceiver(wifiP2pManager, channel, this)
         MyApplication.context.registerReceiver(receiver, DirectBroadcastReceiver.getIntentFilter())
+        createGroup()
+        clientList.clear()
     }
 
     fun release() {
@@ -61,12 +65,12 @@ class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
         wifiP2pManager.createGroup(channel, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 Log.i(tag, "createGroup onSuccess")
-                buildMsg(Msg(Value.Message.MsgShow, "group is formed"))
+                buildMsg(Msg(Value.Message.MsgShow, groupIsFormed))
             }
 
             override fun onFailure(reason: Int) {
-                Log.i(tag, "createGroup onFailure: $reason")
-                buildMsg(Msg(Value.Message.MsgShow, "createGroup onFailure"))
+                Log.e(tag, "createGroup onFailure: $reason")
+                buildMsg(Msg(Value.Message.MsgShow, groupIsNotFormed))
             }
         })
     }
@@ -79,12 +83,12 @@ class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
                 //channel.close()
                 clearClientList()
                 // notify MediaCodecCallback of connect status
-                buildMsg(Msg(Value.Message.MsgShow, "group is not formed"))
+                buildMsg(Msg(Value.Message.MsgShow, groupIsNotFormed))
             }
 
             override fun onFailure(reason: Int) {
                 Log.i(tag, "removeGroup onFailure")
-                buildMsg(Msg(Value.Message.MsgShow, "removeGroup onFailure"))
+                buildMsg(Msg(Value.Message.MsgShow, groupIsFormed))
             }
         })
     }
@@ -110,10 +114,10 @@ class ServerWifiDirect : WifiP2pManager.ChannelListener, IDirectActionListener {
         Log.i(tag, "onConnectionInfoAvailable=$wifiP2pInfo")
 
         if (wifiP2pInfo.groupFormed) {
-            buildMsg(Msg(Value.Message.MsgShow, "group is formed"))
+            buildMsg(Msg(Value.Message.MsgShow, groupIsFormed))
         } else {
             Log.i(tag, "未建组！")
-            buildMsg(Msg(Value.Message.MsgShow, "group is not formed"))
+            buildMsg(Msg(Value.Message.MsgShow, groupIsNotFormed))
         }
         if (!wifiP2pInfo.isGroupOwner) {
             Log.i(tag, "本机不是组长！")

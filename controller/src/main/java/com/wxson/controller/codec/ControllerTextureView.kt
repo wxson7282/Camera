@@ -5,12 +5,7 @@ import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.util.AttributeSet
 import android.util.Log
-import android.view.Surface
 import android.view.TextureView
-import com.wxson.camera_comm.ImageData
-import com.wxson.controller.connect.IFirstImageDataListener
-import com.wxson.controller.ui.main.SharedViewModel
-import kotlinx.coroutines.channels.Channel
 
 /**
  * @author wxson
@@ -31,7 +26,7 @@ class ControllerTextureView(mContext: Context, attrs: AttributeSet) : TextureVie
 
     override fun onSurfaceTextureAvailable(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
         Log.i(tag, "onSurfaceTextureAvailable")
-        registerFirstImageDataListener()
+        //registerFirstImageDataListener()
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
@@ -41,10 +36,10 @@ class ControllerTextureView(mContext: Context, attrs: AttributeSet) : TextureVie
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
         Log.i(tag, "onSurfaceTextureDestroyed")
         //stop and release mediaCodec
-        mediaCodec?.let {
-            it.stop()
-            it.release()
-        }
+        //mediaCodec?.let {
+        //    it.stop()
+        //    it.release()
+        //}
         return true
     }
 
@@ -52,17 +47,17 @@ class ControllerTextureView(mContext: Context, attrs: AttributeSet) : TextureVie
         //Log.i(tag, "onSurfaceTextureUpdated")
     }
 
-    private fun registerFirstImageDataListener() {
-        val firstImageDataListener = object : IFirstImageDataListener {
-            override fun onFirstImageDataArrived(imageData: ImageData, imageDataChannel: Channel<ImageData>) {
-                ////prepare decoder
-                //val surface = Surface(super@ControllerTextureView.getSurfaceTexture())
-                //mediaCodec = Decoder.prepareDecoder(surface, imageData, imageDataChannel)
-                ////start decoder
-                //mediaCodec?.start()
-            }
-        }
+    //private fun registerFirstImageDataListener() {
+    //    val firstImageDataListener = object : IFirstImageDataListener {
+    //        override fun onFirstImageDataArrived(imageData: ImageData, imageDataChannel: Channel<ImageData>) {
+    //            ////prepare decoder
+    //            //val surface = Surface(super@ControllerTextureView.getSurfaceTexture())
+    //            //mediaCodec = Decoder.prepareDecoder(surface, imageData, imageDataChannel)
+    //            ////start decoder
+    //            //mediaCodec?.start()
+    //        }
+    //    }
         //listener injected into SharedViewModel
         //SharedViewModel.firstImageDataListener = firstImageDataListener
-    }
+    //}
 }
