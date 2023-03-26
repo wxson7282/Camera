@@ -3,7 +3,6 @@ package com.wxson.controller.ui.main
 import android.hardware.camera2.CameraCharacteristics
 import android.os.Bundle
 import android.util.Log
-import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -37,6 +36,7 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         binding?.textureView?.surfaceTextureListener = viewModel.getSurfaceTextureListener()
+        //将textureView设为正方形，否则图像显示不完整。现在原因不明。
         binding?.textureView?.setAspectRation(1, 1)
 
         lifecycleScope.launch {
