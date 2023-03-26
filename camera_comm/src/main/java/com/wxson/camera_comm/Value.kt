@@ -26,5 +26,6 @@ object Value {
         const val ConfigAndStartDecoder = "config and start decoder"
         const val ShowMainFragment = "show MainFragment"
         const val LensFacingChanged = "lens facing changed"
+//        const val ImageSizeChanged = "image size changed"
     }
 }

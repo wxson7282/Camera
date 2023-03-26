@@ -56,13 +56,14 @@ class Decoder private constructor(private val mediaCodecCallback: MediaCodecCall
     //region attributes
     private val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureAvailable(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
-            Log.i(tag, "onSurfaceTextureAvailable")
+            Log.i(tag, "onSurfaceTextureAvailable width=$width height=$height")
             // get surface from TextureView.SurfaceTexture
             surface = Surface(surfaceTexture)
         }
 
-        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
+        override fun onSurfaceTextureSizeChanged(surfaceTexture: SurfaceTexture, width: Int, height: Int) {
             Log.i(tag, "onSurfaceTextureSizeChanged width=$width height=$height")
+            surface = Surface(surfaceTexture)
         }
 
         override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {

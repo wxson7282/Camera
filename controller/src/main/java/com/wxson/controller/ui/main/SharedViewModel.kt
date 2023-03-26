@@ -17,6 +17,7 @@ import com.wxson.controller.connect.ClientRunnable
 import com.wxson.controller.wifi.ClientWifiDirect
 import com.wxson.controller.wifi.DeviceAdapter
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -89,13 +90,14 @@ class SharedViewModel : ViewModel() {
                         buildMsg(Msg(Value.Message.ShowMainFragment, null))
                         // config decoder
                         val imageData = it.obj as ImageData
+                        // 通知textureView根据imageData.imageSize调整textureView的长宽比
+                        val imageSize = Size(imageData.width, imageData.height)
+//                        buildMsg(Msg(Value.Message.ImageSizeChanged, imageSize))
+//                        delay(300)
                         // 通知textureView根据camera镜头方向改变rotation
                         buildMsg(Msg(Value.Message.LensFacingChanged, imageData.lensFacing))
-                        decoder.configure(                                       //配置解码器
-                            String(imageData.mime),
-                            Size(imageData.width, imageData.height),
-                            imageData.csd
-                        )
+                        delay(300)
+                        decoder.configure(String(imageData.mime), imageSize, imageData.csd) //配置解码器
                         decoder.start()                                         //启动解码器
                         Log.i(tag, "decoder start")
                     }

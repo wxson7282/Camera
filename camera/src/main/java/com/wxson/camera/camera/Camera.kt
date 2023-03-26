@@ -72,6 +72,9 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
     private var stepHeight: Float = 0f                                 // 每次改变的高度大小
     lateinit var encoder: Encoder
     lateinit var mediaCodecCallback: MediaCodecCallback
+    private var videoCodecSizeString: String? = null
+    private var videoCodecMime: String? = null
+    private var encoderImageSize: Size = Size(640, 480)
 
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
@@ -137,6 +140,13 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
 
     init {
         Log.i(tag, "init")
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MyApplication.context)
+        videoCodecSizeString = sharedPreferences.getString("size_list", "640*480")
+        videoCodecMime = sharedPreferences.getString("format_list", MediaFormat.MIMETYPE_VIDEO_AVC)
+        videoCodecSizeString?.let {
+            val (width, height) = it.split("*")
+            encoderImageSize = Size(width.toInt(), height.toInt())
+        }
         handlerThread.start()
         cameraHandler = Handler(handlerThread.looper)
     }
@@ -279,18 +289,11 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
 
         imageReader = ImageReader.newInstance(savePicSize.width, savePicSize.height, ImageFormat.JPEG, 1)
         imageReader?.setOnImageAvailableListener(onImageAvailableListener, cameraHandler)
-        // 定义编码器回调，从Image Size Preference中取得图传size
-        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(MyApplication.context)
-        val videoCodecSizeString = sharedPreferences.getString("size_list", "640*480")
-        val videoCodecMime = sharedPreferences.getString("format_list", MediaFormat.MIMETYPE_VIDEO_AVC)
-        videoCodecSizeString?.let {
-            val (width, height) = it.split("*")
-            val imageSize =Size(width.toInt(), height.toInt())
-            mediaCodecCallback = MediaCodecCallback(
-                videoCodecMime?:MediaFormat.MIMETYPE_VIDEO_AVC,
-                imageSize, cameraFacing,
-                imageDataChannel)
-        }
+        // 定义编码器回调
+        mediaCodecCallback = MediaCodecCallback(
+            videoCodecMime?:MediaFormat.MIMETYPE_VIDEO_AVC,
+            encoderImageSize, cameraFacing,
+            imageDataChannel)
 
         openCamera()
     }
@@ -322,8 +325,8 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
      *
      * @param targetWidth   目标宽度
      * @param targetHeight  目标高度
-     * @param maxWidth      最大宽度(即TextureView的宽度)
-     * @param maxHeight     最大高度(即TextureView的高度)
+     * @param maxWidth      最大宽度
+     * @param maxHeight     最大高度
      * @param sizeList      支持的Size列表
      *
      * @return  返回与指定宽高相等或最接近的尺寸
@@ -389,7 +392,9 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
 
         previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         // 建立视频编码器
-        encoder = Encoder(this.previewSize, mediaCodecCallback)
+        encoder = Encoder(encoderImageSize, mediaCodecCallback)
+//        val encoderFormatSize = Size(encoderImageSize.height, encoderImageSize.width)
+//        encoder = Encoder(encoderFormatSize, mediaCodecCallback)
 
         val previewSurface = Surface(surfaceTexture)
         previewRequestBuilder?.let {

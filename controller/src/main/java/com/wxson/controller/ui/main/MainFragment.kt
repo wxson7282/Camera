@@ -3,6 +3,7 @@ package com.wxson.controller.ui.main
 import android.hardware.camera2.CameraCharacteristics
 import android.os.Bundle
 import android.util.Log
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -36,6 +37,7 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         binding?.textureView?.surfaceTextureListener = viewModel.getSurfaceTextureListener()
+        binding?.textureView?.setAspectRation(1, 1)
 
         lifecycleScope.launch {
             viewModel.msgStateFlow.collect {
@@ -51,6 +53,11 @@ class MainFragment : Fragment() {
                             }
                         }
                     }
+//                    Value.Message.ImageSizeChanged -> {
+//                        val imageSize = it.obj as Size
+////                        binding?.textureView?.setAspectRation(imageSize.width, imageSize.height)
+//                        binding?.textureView?.setAspectRation(1, 1)
+//                    }
                 }
             }
         }
