@@ -10,6 +10,7 @@ import android.hardware.camera2.*
 import android.hardware.camera2.params.OutputConfiguration
 import android.hardware.camera2.params.SessionConfiguration
 import android.media.ImageReader
+import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
 import android.os.Handler
@@ -39,10 +40,12 @@ import java.util.*
 class Camera(private val imageDataChannel: Channel<ImageData>) {
 
     companion object {
-        const val PREVIEW_WIDTH = 1080                                         //预览的宽度
-        const val PREVIEW_HEIGHT = 1440                                       //预览的高度
-        const val SAVE_WIDTH = 1080                                            //保存图片的宽度
-        const val SAVE_HEIGHT = 1440                                          //保存图片的高度
+        const val PREVIEW_WIDTH = 1440                                         //预览的宽度
+        const val PREVIEW_HEIGHT = 1080                                       //预览的高度
+        const val SAVE_WIDTH =  4160                                         //保存图片的宽度
+        const val SAVE_HEIGHT = 3120                                          //保存图片的高度
+        const val CODEC_WIDTH = 640                                             //编解码器图片的宽度
+        const val CODEC_HEIGHT = 480                                            //编解码器图片的高度
     }
 
     private val tag = this.javaClass.simpleName
@@ -61,6 +64,7 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
     private val handlerThread = HandlerThread("CameraThread")
     private var previewSize = Size(PREVIEW_WIDTH, PREVIEW_HEIGHT)                      //预览大小
     private var savePicSize = Size(SAVE_WIDTH, SAVE_HEIGHT)                            //保存图片大小
+    private var codecSize = Size(CODEC_WIDTH, CODEC_HEIGHT)                             //编解码器图像大小
     private var textureViewHeight: Int = 0
     private var textureViewWidth: Int = 0
     private var surfaceTexture: SurfaceTexture? = null
@@ -106,7 +110,6 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
     }
 
     private val onImageAvailableListener = ImageReader.OnImageAvailableListener {
-
         val image = it.acquireNextImage()
         val byteBuffer = image.planes[0].buffer
         val byteArray = ByteArray(byteBuffer.remaining())
@@ -187,8 +190,6 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
             CameraCharacteristics.LENS_FACING_BACK
         else
             CameraCharacteristics.LENS_FACING_FRONT
-        //if (this::mediaCodecCallback.isInitialized)
-        //    mediaCodecCallback.setLensFacing(cameraFacing)
 
         previewSize = Size(PREVIEW_WIDTH, PREVIEW_HEIGHT) //重置预览大小
         releaseCamera()
@@ -261,24 +262,25 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
 
         val savePicSizes = configurationMap?.getOutputSizes(ImageFormat.JPEG)          //保存照片尺寸
         val previewSizes = configurationMap?.getOutputSizes(SurfaceTexture::class.java) //预览尺寸
-
-        val exchange = exchangeWidthAndHeight(displayRotation, cameraSensorOrientation)
+        val codecSizes = configurationMap?.getOutputSizes(MediaCodec::class.java)       //编解码尺寸
 
         Log.i(tag, "图片保存尺寸")
         savePicSize = getBestSize(
-            if (exchange) savePicSize.height else savePicSize.width,
-            if (exchange) savePicSize.width else savePicSize.height,
-            if (exchange) savePicSize.height else savePicSize.width,
-            if (exchange) savePicSize.width else savePicSize.height,
-            savePicSizes?.toList() ?: emptyList())
+            savePicSize.width, savePicSize.height, savePicSize.width, savePicSize.height,
+            savePicSizes?.toList() ?: emptyList()
+        )
 
         Log.i(tag, "图片预览尺寸")
         previewSize = getBestSize(
-            if (exchange) previewSize.height else previewSize.width,
-            if (exchange) previewSize.width else previewSize.height,
-            if (exchange) textureViewHeight else textureViewWidth,
-            if (exchange) textureViewWidth else textureViewHeight,
-            previewSizes?.toList() ?: emptyList())
+            previewSize.width, previewSize.height, textureViewHeight, textureViewWidth,
+            previewSizes?.toList() ?: emptyList()
+        )
+
+        Log.i(tag, "编解码尺寸")
+        codecSize = getBestSize(
+            codecSize.width, codecSize.height, codecSize.width, codecSize.height,
+            codecSizes?.toList() ?: emptyList()
+        )
 
         // 请求MainActivity重置预览尺寸
         Log.i(tag, "setPreviewSize(${previewSize.width}, ${previewSize.height})")
@@ -286,6 +288,7 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
 
         Log.i(tag, "预览最优尺寸 ：${previewSize.width} * ${previewSize.height}, 比例  ${previewSize.width.toFloat() / previewSize.height}")
         Log.i(tag, "保存图片最优尺寸 ：${savePicSize.width} * ${savePicSize.height}, 比例  ${savePicSize.width.toFloat() / savePicSize.height}")
+        Log.i(tag, "图像编解码最优尺寸 ： ${codecSize.width} * ${codecSize.height}, 比例  ${codecSize.width.toFloat() / codecSize.height}")
 
         imageReader = ImageReader.newInstance(savePicSize.width, savePicSize.height, ImageFormat.JPEG, 1)
         imageReader?.setOnImageAvailableListener(onImageAvailableListener, cameraHandler)
@@ -296,27 +299,6 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
             imageDataChannel)
 
         openCamera()
-    }
-
-    /**
-     * 根据提供的屏幕方向 [displayRotation] 和相机方向 [sensorOrientation] 返回是否需要交换宽高
-     */
-    private fun exchangeWidthAndHeight(displayRotation: Int, sensorOrientation: Int): Boolean {
-        var exchange = false
-        when (displayRotation) {
-            Surface.ROTATION_0, Surface.ROTATION_180 ->
-                if (sensorOrientation == 90 || sensorOrientation == 270) {
-                    exchange = true
-                }
-            Surface.ROTATION_90, Surface.ROTATION_270 ->
-                if (sensorOrientation == 0 || sensorOrientation == 180) {
-                    exchange = true
-                }
-            else -> buildMsg(Msg("msgStateFlow","Display rotation is invalid: $displayRotation"))
-        }
-        Log.i(tag,"屏幕方向  $displayRotation")
-        Log.i(tag,"相机方向  $sensorOrientation")
-        return exchange
     }
 
     /**
@@ -339,7 +321,7 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
         for (size in sizeList) {
             //宽<=最大宽度  &&  高<=最大高度  &&  宽高比 == 目标值宽高比
             if (size.width <= maxWidth && size.height <= maxHeight
-                && size.width == size.height * targetWidth / targetHeight) {
+                && (size.width.toFloat() / size.height) == (targetWidth.toFloat() / targetHeight)) {
                 if (size.width >= targetWidth && size.height >= targetHeight)
                     bigEnough.add(size)
                 else
@@ -347,7 +329,7 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
             }
             Log.i(tag,"系统支持的尺寸: ${size.width} * ${size.height} ,  比例 ：${size.width.toFloat() / size.height}")
         }
-        Log.i(tag,"最大尺寸 ：$maxWidth * $maxHeight, 比例 ：${targetWidth.toFloat() / targetHeight}")
+        Log.i(tag,"最大尺寸 ：$maxWidth * $maxHeight, 比例 ：${maxWidth.toFloat() / maxHeight}")
         Log.i(tag,"目标尺寸 ：$targetWidth * $targetHeight, 比例 ：${targetWidth.toFloat() / targetHeight}")
 
         //选择bigEnough中最小的值  或 notBigEnough中最大的值
@@ -393,8 +375,6 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
         previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         // 建立视频编码器
         encoder = Encoder(encoderImageSize, mediaCodecCallback)
-//        val encoderFormatSize = Size(encoderImageSize.height, encoderImageSize.width)
-//        encoder = Encoder(encoderFormatSize, mediaCodecCallback)
 
         val previewSurface = Surface(surfaceTexture)
         previewRequestBuilder?.let {
