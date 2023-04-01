@@ -37,7 +37,7 @@ class MainFragment : Fragment() {
         viewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         binding?.textureView?.surfaceTextureListener = viewModel.getSurfaceTextureListener()
         //将textureView设为正方形，否则图像显示不完整。现在原因不明。
-        binding?.textureView?.setAspectRation(1, 1)
+        binding?.textureView?.setAspectRation(640, 640)
 
         lifecycleScope.launch {
             viewModel.msgStateFlow.collect {
