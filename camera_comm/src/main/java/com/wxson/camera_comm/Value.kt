@@ -14,6 +14,7 @@ object Value {
         const val Blank = ""
         const val ClientInterruptRequest = "client interrupt request"
         const val ConnectStatus = "connect status"
+        const val CurrentConnectStatus = "current connect status"
         const val ShowWifiP2pInfo = "SHOW_WIFI_P2P_INFO"
         const val ShowRemoteDeviceInfo = "SHOW_REMOTE_DEVICE_INFO"
         const val ShowSelfDeviceInfo = "SHOW_SELF_DEVICE_INFO"

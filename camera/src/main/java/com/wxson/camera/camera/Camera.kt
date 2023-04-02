@@ -27,6 +27,7 @@ import com.wxson.camera.codec.Encoder
 import com.wxson.camera.codec.MediaCodecCallback
 import com.wxson.camera.util.BitmapUtils
 import com.wxson.camera_comm.ImageData
+import com.wxson.camera_comm.Value
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -192,8 +193,11 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
             CameraCharacteristics.LENS_FACING_FRONT
 
         previewSize = Size(PREVIEW_WIDTH, PREVIEW_HEIGHT) //重置预览大小
+        encoder.release()
         releaseCamera()
         initCameraInfo()
+        // 把当前客户端连接状态注入mediaCodecCallback
+        buildMsg(Msg(Value.Message.CurrentConnectStatus, null))
     }
 
 

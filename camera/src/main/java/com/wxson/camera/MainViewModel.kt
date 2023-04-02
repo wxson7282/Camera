@@ -13,6 +13,7 @@ import com.wxson.camera_comm.Value
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -30,6 +31,7 @@ class MainViewModel: ViewModel() {
     // imageDataChannel 的buffer内只保留最新数据
     // Drop the oldest value in the buffer on overflow, add the new value to the buffer, do not suspend.
     private val imageDataChannel = Channel<ImageData>(Channel.CONFLATED)
+    private var connectStatus = false
 
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
@@ -49,22 +51,40 @@ class MainViewModel: ViewModel() {
         serverRunnable = ServerRunnable(imageDataChannel)
         serverThread = Thread(serverRunnable)
         serverWifiDirect = ServerWifiDirect()
+        // handle message from submodules
         viewModelScope.launch {
             serverRunnable.msgStateFlow.collect{
                 when (it.type) {
                     Value.Message.ConnectStatus -> {  //把客户端连接状态注入mediaCodecCallback
                         camera.mediaCodecCallback.isClientConnected = it.obj as Boolean
-                        buildMsg(it)        //转发到MainActivity
+                        this@MainViewModel.connectStatus = it.obj as Boolean
+                    }
+                }
+                buildMsg(it)        //转发到MainActivity
+            }
+        }
+        viewModelScope.launch {
+            serverWifiDirect.msgStateFlow.collect {
+                when (it.type) {
+                    Value.Message.ConnectStatus -> {  //把客户端连接状态注入mediaCodecCallback
+                        camera.mediaCodecCallback.isClientConnected = it.obj as Boolean
+                        this@MainViewModel.connectStatus = it.obj as Boolean
+                    }
+                }
+                buildMsg(it)        //转发到MainActivity
+            }
+        }
+        viewModelScope.launch {
+            camera.msgStateFlow.collect {
+                when (it.type) {
+                    Value.Message.CurrentConnectStatus -> {
+                        //把当前客户端连接状态注入mediaCodecCallback
+                        camera.mediaCodecCallback.isClientConnected = this@MainViewModel.connectStatus
                     }
                     else -> {
                         buildMsg(it)
                     }
                 }
-            }
-        }
-        viewModelScope.launch {
-            serverWifiDirect.msgStateFlow.collect {
-                buildMsg(it)        // 转发来自wifiDirect的Msg
             }
         }
 
