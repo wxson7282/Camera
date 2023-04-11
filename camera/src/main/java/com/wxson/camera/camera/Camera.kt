@@ -76,7 +76,7 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
     private var stepWidth: Float = 0f                                  // 每次改变的宽度大小
     private var stepHeight: Float = 0f                                 // 每次改变的高度大小
     lateinit var encoder: Encoder
-    lateinit var mediaCodecCallback: MediaCodecCallback
+    var mediaCodecCallback: MediaCodecCallback? = null
     private var videoCodecSizeString: String? = null
     private var videoCodecMime: String? = null
     private var encoderImageSize: Size = Size(640, 480)
@@ -378,7 +378,13 @@ class Camera(private val imageDataChannel: Channel<ImageData>) {
 
         previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
         // 建立视频编码器
-        encoder = Encoder(encoderImageSize, mediaCodecCallback)
+        if (mediaCodecCallback != null)
+            encoder = Encoder(encoderImageSize, mediaCodecCallback!!)
+        else {
+            Log.e(tag, "createPreviewCaptureSession mediaCodecCallback==null")
+            return
+        }
+
 
         val previewSurface = Surface(surfaceTexture)
         previewRequestBuilder?.let {

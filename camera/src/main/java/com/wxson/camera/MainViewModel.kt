@@ -56,7 +56,7 @@ class MainViewModel: ViewModel() {
             serverRunnable.msgStateFlow.collect{
                 when (it.type) {
                     Value.Message.ConnectStatus -> {  //把客户端连接状态注入mediaCodecCallback
-                        camera.mediaCodecCallback.isClientConnected = it.obj as Boolean
+                        camera.mediaCodecCallback?.isClientConnected = it.obj as Boolean
                         this@MainViewModel.connectStatus = it.obj as Boolean
                     }
                 }
@@ -67,7 +67,8 @@ class MainViewModel: ViewModel() {
             serverWifiDirect.msgStateFlow.collect {
                 when (it.type) {
                     Value.Message.ConnectStatus -> {  //把客户端连接状态注入mediaCodecCallback
-                        camera.mediaCodecCallback.isClientConnected = it.obj as Boolean
+                        // mediaCodecCallback is initialized
+                        camera.mediaCodecCallback?.isClientConnected = it.obj as Boolean
                         this@MainViewModel.connectStatus = it.obj as Boolean
                     }
                 }
@@ -79,7 +80,7 @@ class MainViewModel: ViewModel() {
                 when (it.type) {
                     Value.Message.CurrentConnectStatus -> {
                         //把当前客户端连接状态注入mediaCodecCallback
-                        camera.mediaCodecCallback.isClientConnected = this@MainViewModel.connectStatus
+                        camera.mediaCodecCallback?.isClientConnected = this@MainViewModel.connectStatus
                     }
                     else -> {
                         buildMsg(it)

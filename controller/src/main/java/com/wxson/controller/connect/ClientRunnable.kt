@@ -33,6 +33,7 @@ class ClientRunnable(
     private val tag = this.javaClass.simpleName
     private val clientJob by lazy { Job() }
     private lateinit var clientSocket: Socket
+    private var lensFacing = 9
 
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
@@ -77,13 +78,20 @@ class ClientRunnable(
                 while (isActive) {
                     val imageData = objectInputStream.readObject()
                     if (imageData.javaClass.simpleName == "ImageData") {
+                        val cameraFacing = (imageData as ImageData).lensFacing
+                        if (this@ClientRunnable.lensFacing != cameraFacing) {
+                            Log.i(tag, "lens facing changed")
+                            buildMsg(Msg(Value.Message.LensFacingChanged, cameraFacing))
+                            this@ClientRunnable.lensFacing = cameraFacing
+                            delay(300)
+                        }
                         if (isFirstImageData) {     //如果是第一帧图像数据，则通知调用者配置解码器，并且启动。
                             Log.i(tag, "first imageData arrived")
                             buildMsg(Msg(Value.Message.ConfigAndStartDecoder, imageData))
                             isFirstImageData = false
                             delay(200)  //需要给解码器一点时间
                         }
-                        imageDataChannel.send(imageData as ImageData)
+                        imageDataChannel.send(imageData)
                         //Log.i(tag, "imageData arrived")
                     }
                 }

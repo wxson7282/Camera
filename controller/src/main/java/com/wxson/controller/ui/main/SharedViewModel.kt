@@ -20,6 +20,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class SharedViewModel : ViewModel() {
@@ -92,17 +93,15 @@ class SharedViewModel : ViewModel() {
                         val imageData = it.obj as ImageData
                         // 通知textureView根据imageData.imageSize调整textureView的长宽比
                         val imageSize = Size(imageData.width, imageData.height)
-//                        buildMsg(Msg(Value.Message.ImageSizeChanged, imageSize))
+//                        // 通知textureView根据camera镜头方向改变rotation
+//                        buildMsg(Msg(Value.Message.LensFacingChanged, imageData.lensFacing))
 //                        delay(300)
-                        // 通知textureView根据camera镜头方向改变rotation
-                        buildMsg(Msg(Value.Message.LensFacingChanged, imageData.lensFacing))
-                        delay(300)
                         decoder.configure(String(imageData.mime), imageSize, imageData.csd) //配置解码器
                         decoder.start()                                         //启动解码器
                         Log.i(tag, "decoder start")
                     }
                     Value.Message.Blank -> Log.i(tag, "blank msg from ClientRunnable")
-                    else -> buildMsg(it)
+                    else -> buildMsg(it)    // send message up
                 }
             }
         }
