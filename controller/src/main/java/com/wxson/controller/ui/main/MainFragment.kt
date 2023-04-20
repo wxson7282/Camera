@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.wxson.camera_comm.ImageData
 import com.wxson.camera_comm.Value
 import com.wxson.controller.databinding.FragmentMainBinding
 import kotlinx.coroutines.launch
@@ -43,7 +44,7 @@ class MainFragment : Fragment() {
             viewModel.msgStateFlow.collect {
                 when (it.type) {
                     Value.Message.LensFacingChanged -> {
-                        when (it.obj as Int) {      // it.obj as lens facing
+                        when ((it.obj as ImageData).lensFacing) {
                             CameraCharacteristics.LENS_FACING_BACK -> {
                                 binding?.textureView?.rotation = 90f
                             }
@@ -53,11 +54,6 @@ class MainFragment : Fragment() {
                             }
                         }
                     }
-//                    Value.Message.ImageSizeChanged -> {
-//                        val imageSize = it.obj as Size
-////                        binding?.textureView?.setAspectRation(imageSize.width, imageSize.height)
-//                        binding?.textureView?.setAspectRation(1, 1)
-//                    }
                 }
             }
         }

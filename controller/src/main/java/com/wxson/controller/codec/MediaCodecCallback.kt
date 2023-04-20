@@ -33,11 +33,13 @@ class MediaCodecCallback(private val imageDataChannel: Channel<ImageData>) : Med
                     codec.queueInputBuffer(index, 0, length, timeStamp, 0)
                     //Log.i(tag, "onInputBufferAvailable")
                 }
+            } catch (e: java.lang.IllegalStateException) {
+                Log.e(tag, "onInputBufferAvailable IllegalStateException")
             } catch (e: IndexOutOfBoundsException) {
-                Log.e(tag, "inputBuffer数据越界 IndexOutOfBoundsException");
+                Log.e(tag, "inputBuffer数据越界 IndexOutOfBoundsException")
             } catch (e: Exception) {
-                e.printStackTrace();
-                throw e;
+                e.printStackTrace()
+                throw e
             }
         }
     }

@@ -1,8 +1,6 @@
 package com.wxson.controller.connect
 
 import android.util.Log
-import com.wxson.camera_comm.CommonTools.byteArrayToObject
-import com.wxson.camera_comm.CommonTools.byteStringToObject
 import com.wxson.camera_comm.ImageData
 import com.wxson.camera_comm.Msg
 import com.wxson.camera_comm.Value
@@ -12,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import okio.*
 import java.io.ObjectInputStream
-import java.lang.Runnable
 import java.net.Socket
 import java.net.SocketException
 import kotlin.io.use
@@ -33,7 +30,7 @@ class ClientRunnable(
     private val tag = this.javaClass.simpleName
     private val clientJob by lazy { Job() }
     private lateinit var clientSocket: Socket
-    private var lensFacing = 9
+    private var lensFacing = 99              //undefined
 
     private val _msg = MutableStateFlow(Msg("", null))
     val msgStateFlow: StateFlow<Msg> = _msg
@@ -79,17 +76,17 @@ class ClientRunnable(
                     val imageData = objectInputStream.readObject()
                     if (imageData.javaClass.simpleName == "ImageData") {
                         val cameraFacing = (imageData as ImageData).lensFacing
-                        if (this@ClientRunnable.lensFacing != cameraFacing) {
-                            Log.i(tag, "lens facing changed")
-                            buildMsg(Msg(Value.Message.LensFacingChanged, cameraFacing))
-                            this@ClientRunnable.lensFacing = cameraFacing
-                            delay(300)
-                        }
                         if (isFirstImageData) {     //如果是第一帧图像数据，则通知调用者配置解码器，并且启动。
                             Log.i(tag, "first imageData arrived")
+                            this@ClientRunnable.lensFacing = cameraFacing
                             buildMsg(Msg(Value.Message.ConfigAndStartDecoder, imageData))
                             isFirstImageData = false
                             delay(200)  //需要给解码器一点时间
+                        } else if (this@ClientRunnable.lensFacing != cameraFacing) {
+                            Log.i(tag, "lens facing changed")
+                            buildMsg(Msg(Value.Message.LensFacingChanged, imageData))
+                            this@ClientRunnable.lensFacing = cameraFacing
+                            delay(300)
                         }
                         imageDataChannel.send(imageData)
                         //Log.i(tag, "imageData arrived")
