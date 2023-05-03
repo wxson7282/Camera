@@ -92,6 +92,7 @@ class ClientRunnable(
                         //Log.i(tag, "imageData arrived")
                     }
                 }
+                objectInputStream.close()
             } catch (socketException: SocketException) {
                 Log.e(tag, "inputJobAsync SocketException")
             } catch (e: IOException) {
@@ -111,11 +112,15 @@ class ClientRunnable(
                 while (isActive) {
                     // 接收本机(客户端)发出的各种信息
                     val msgString = msgChannel.receive()
-                    bufferedSink.write(msgString.toByteArray())
+                    bufferedSink.writeUtf8(msgString + System.lineSeparator())
+                    bufferedSink.flush()
+                    Log.i(tag, "output message: $msgString")
                 }
-            } catch (socketException: SocketException) {
+            } catch (e: SocketException) {
                 Log.e(tag, "outputJobAsync SocketException")
-            } catch (e: Exception) {
+            } catch (e: IOException) {
+                Log.e(tag, "outputJobAsync IOException")
+            }catch (e: Exception) {
                 e.printStackTrace()
             }
             Log.i(tag, "outputJob end")

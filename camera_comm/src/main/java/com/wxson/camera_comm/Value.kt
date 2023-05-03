@@ -1,5 +1,7 @@
 package com.wxson.camera_comm
 
+import androidx.activity.result.contract.ActivityResultContracts
+
 /**
  * @author wxson
  * @date 2022/11/3
@@ -13,6 +15,7 @@ object Value {
     object Message {
         const val Blank = ""
         const val ClientInterruptRequest = "client interrupt request"
+        const val ClientMessage = "client message"
         const val ConnectStatus = "connect status"
         const val CurrentConnectStatus = "current connect status"
         const val ShowWifiP2pInfo = "SHOW_WIFI_P2P_INFO"
@@ -28,5 +31,9 @@ object Value {
         const val ShowMainFragment = "show MainFragment"
         const val LensFacingChanged = "lens facing changed"
 //        const val ImageSizeChanged = "image size changed"
+        const val ExchangeLens = "exchange lens"
+        const val ZoomIn = "zoom in"
+        const val ZoomOut = "zoom out"
+        const val TakePicture = "take picture"
     }
 }

@@ -1,7 +1,6 @@
 package com.wxson.camera.connect
 
 import android.util.Log
-import com.wxson.camera_comm.CommonTools
 import com.wxson.camera_comm.ImageData
 import com.wxson.camera_comm.Msg
 import com.wxson.camera_comm.Value
@@ -46,10 +45,10 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
                 clientSocket.use { socket ->
                     val bufferedSource: BufferedSource = socket.source().buffer()
                     val bufferedSink: BufferedSink = socket.sink().buffer()
-                    //输出协程
-                    val outputJob = outputJobAsync(this, bufferedSink)
                     //输入协程
                     val inputJob = inputJobAsync(this, bufferedSource)
+                    //输出协程
+                    val outputJob = outputJobAsync(this, bufferedSink)
                     // if any job ended, other job should be cancelled.
                     if (outputJob.await() || inputJob.await()) {
                         outputJob.cancel()
@@ -81,10 +80,10 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
                     val imageData = imageDataChannel.receive()                  //这是阻塞方法
                     // 发送imageData数据
                     objectOutputStream.writeObject(imageData)
-                    objectOutputStream.reset()
                     bufferedSink.flush()
-                    //Log.i(tag, "imageData wrote")
+//                    Log.i(tag, "imageData wrote")
                 }
+                objectOutputStream.close()
             } catch (socketException: SocketException) {
                 Log.e(tag, "writeImageData SocketException")
             } catch (e: Exception) {
@@ -100,8 +99,9 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
             Log.i(tag, "inputJob start")
             try {
                 while (isActive) {
-                    val receivedMsg = bufferedSource.readByteArray().toString() //这是阻塞方法，接收到客户端数据后进入后续处理
-                    msgHandle(receivedMsg)
+                    Log.i(tag, "inputJobAsync coroutineScope isActive")
+                    val receivedMsg = bufferedSource.readUtf8Line()
+                    msgHandle(receivedMsg?: Value.Message.Blank)
                 }
             }  catch (socketException: SocketException) {
                 Log.e(tag, "readClientMsg SocketException")
@@ -114,10 +114,15 @@ class ServerRunnable(private val imageDataChannel: Channel<ImageData>) : Runnabl
     }
 
     private fun msgHandle(receivedMsg: String) {
+        Log.i(tag, "msgHandle client message: $receivedMsg")
         when (receivedMsg) {
             Value.Message.ClientInterruptRequest -> {      //客户端中断请求
                 //clientSocket should be closed and recreated
             }
+           else -> {
+               buildMsg(Msg(Value.Message.ClientMessage, receivedMsg))     //forward client message up
+           }
+
         }
     }
 

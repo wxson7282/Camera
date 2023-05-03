@@ -13,7 +13,6 @@ import com.wxson.camera_comm.Value
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 /**
@@ -58,6 +57,15 @@ class MainViewModel: ViewModel() {
                     Value.Message.ConnectStatus -> {  //把客户端连接状态注入mediaCodecCallback
                         camera.mediaCodecCallback?.isClientConnected = it.obj as Boolean
                         this@MainViewModel.connectStatus = it.obj as Boolean
+                    }
+                    Value.Message.ClientMessage -> {    // handle message from client
+                        when (it.obj as String) {
+                            Value.Message.ExchangeLens -> {exchangeCamera()}
+                            Value.Message.ZoomIn -> {handleZoom(true)}
+                            Value.Message.ZoomOut -> {handleZoom(false)}
+                            Value.Message.TakePicture -> {takePic()}
+                        }
+
                     }
                 }
                 buildMsg(it)        //转发到MainActivity

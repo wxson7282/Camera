@@ -13,6 +13,10 @@ import androidx.lifecycle.viewModelScope
 import com.wxson.camera_comm.ImageData
 import com.wxson.camera_comm.Msg
 import com.wxson.camera_comm.Value
+import com.wxson.camera_comm.Value.Message.ExchangeLens
+import com.wxson.camera_comm.Value.Message.TakePicture
+import com.wxson.camera_comm.Value.Message.ZoomIn
+import com.wxson.camera_comm.Value.Message.ZoomOut
 import com.wxson.controller.codec.Decoder
 import com.wxson.controller.codec.MediaCodecCallback
 import com.wxson.controller.connect.ClientRunnable
@@ -31,7 +35,7 @@ class SharedViewModel : ViewModel() {
     private val clientWifiDirect: ClientWifiDirect
     private var decoder: Decoder? = null
     private val imageDataChannel = Channel<ImageData>(Channel.CONFLATED)
-    private val msgChannel = Channel<String>(Channel.BUFFERED)
+    private val msgChannel = Channel<String>(Channel.CONFLATED)
     private lateinit var surface: Surface
 
     //region attributes
@@ -140,5 +144,21 @@ class SharedViewModel : ViewModel() {
         override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
             //Log.i(tag, "onSurfaceTextureUpdated")
         }
+    }
+
+    suspend fun remoteExchangeLens() {
+        msgChannel.send(ExchangeLens)
+    }
+
+    suspend fun remoteZoomIn() {
+        msgChannel.send(ZoomIn)
+    }
+
+    suspend fun remoteZoomOut() {
+        msgChannel.send(ZoomOut)
+    }
+
+    suspend fun remoteTakePicture() {
+        msgChannel.send(TakePicture)
     }
 }

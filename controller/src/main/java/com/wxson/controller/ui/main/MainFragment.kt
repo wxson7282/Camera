@@ -36,9 +36,28 @@ class MainFragment : Fragment() {
         Log.i(tag, "onViewCreated")
         super.onViewCreated(view, savedInstanceState)
         viewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
-        binding?.textureView?.surfaceTextureListener = viewModel.getSurfaceTextureListener()
-        //将textureView设为正方形，否则图像显示不完整。现在原因不明。
-        binding?.textureView?.setAspectRation(640, 640)
+//        binding?.textureView?.surfaceTextureListener = viewModel.getSurfaceTextureListener()
+//        //将textureView设为正方形，否则图像显示不完整。现在原因不明。
+//        binding?.textureView?.setAspectRation(640, 640)
+
+        binding?.let {
+            it.textureView.surfaceTextureListener = viewModel.getSurfaceTextureListener()
+            //将textureView设为正方形，否则图像显示不完整。现在原因不明。
+            it.textureView.setAspectRation(640, 640)
+            it.btnExchange.setOnClickListener {
+                lifecycleScope.launch { viewModel.remoteExchangeLens() }
+            }
+            it.btnTakePic.setOnClickListener {
+                lifecycleScope.launch { viewModel.remoteTakePicture() }
+            }
+            it.btnZoomIn.setOnClickListener {
+                lifecycleScope.launch { viewModel.remoteZoomIn() }
+            }
+            it.btnZoomOut.setOnClickListener {
+                lifecycleScope.launch { viewModel.remoteZoomOut() }
+            }
+        }
+
 
         lifecycleScope.launch {
             viewModel.msgStateFlow.collect {
@@ -47,6 +66,7 @@ class MainFragment : Fragment() {
                         when ((it.obj as ImageData).lensFacing) {
                             CameraCharacteristics.LENS_FACING_BACK -> {
                                 binding?.textureView?.rotation = 90f
+                                binding?.textureView?.rotationY = 0f
                             }
                             CameraCharacteristics.LENS_FACING_FRONT -> {
                                 binding?.textureView?.rotation = 270f
