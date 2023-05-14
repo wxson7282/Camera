@@ -2,6 +2,7 @@ package com.wxson.camera.util
 
 import android.annotation.SuppressLint
 import android.os.Environment
+import com.wxson.camera.MyApplication
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -12,13 +13,11 @@ import java.util.*
  * @apiNote
  */
 object FileUtil {
-    private val rootFolderPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).absolutePath + File.separator + "CameraDemo"
-//    private val rootFolderPath = App.getRootPath() + File.separator + "CameraDemo"
-
+    private val rootFolderPath = MyApplication.context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
     @SuppressLint("SimpleDateFormat")
     fun createImageFile(isCrop: Boolean = false): File? {
         return try {
-            val rootFile = File(rootFolderPath + File.separator + "capture")
+            val rootFile = File("$rootFolderPath${File.separator}capture")
             if (!rootFile.exists())
                 rootFile.mkdirs()
 
@@ -37,7 +36,7 @@ object FileUtil {
     @SuppressLint("SimpleDateFormat")
     fun createCameraFile(folderName: String = "camera1"): File? {
         return try {
-            val rootFile = File(rootFolderPath + File.separator + folderName)
+            val rootFile = File("$rootFolderPath${File.separator}$folderName")
             if (!rootFile.exists())
                 rootFile.mkdirs()
 
@@ -56,7 +55,7 @@ object FileUtil {
     @SuppressLint("SimpleDateFormat")
     fun createVideoFile(): File? {
         return try {
-            val rootFile = File(rootFolderPath + File.separator + "video")
+            val rootFile = File("$rootFolderPath${File.separator}video")
             if (!rootFile.exists())
                 rootFile.mkdirs()
 

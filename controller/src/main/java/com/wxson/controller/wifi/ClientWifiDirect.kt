@@ -121,8 +121,8 @@ class ClientWifiDirect(private val deviceAdapter: DeviceAdapter, private val wif
             buildMsg(Msg(Value.Message.StartClientConnectThread, wifiP2pInfo.groupOwnerAddress.hostAddress))
             //启动连接线程需要一点时间
             Thread.sleep(100)
-            //通知调用者向服务器发出连接成功消息
-            buildMsg(Msg(Value.Message.SendMsgToRemote, Value.Message.MsgClientConnected))
+//            //通知调用者向服务器发出连接成功消息
+//            buildMsg(Msg(Value.Message.SendMsgToRemote, Value.Message.MsgClientConnected))
         }
     }
 
