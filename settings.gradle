@@ -16,3 +16,4 @@ rootProject.name = "Camera"
 include ':camera'
 include ':camera_comm'
 include ':controller'
+include ':audio_camera'
